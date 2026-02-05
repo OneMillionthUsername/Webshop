@@ -1,0 +1,37 @@
+﻿services:
+  webshop:
+    build: .
+    container_name: webshop-app
+    ports:
+      - "${HOST_HTTP_PORT}:8080"   # HTTP
+      - "${HOST_HTTPS_PORT}:8081"   # HTTPS (falls konfiguriert)
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - ConnectionStrings__SqlServerConnection=Server=${DB_SERVER},${DB_PORT};Database=${MSSQL_DATABASE};User Id=${DB_USER};Password=${SA_PASSWORD};Encrypt=false;
+    networks:
+      - webshop-network
+
+  shop-db:  
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: webshop-mssql
+    restart: always
+    user: root
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: ${SA_PASSWORD}
+      MSSQL_PID: ${MSSQL_PID}
+      MSSQL_DATA_DIR: /var/opt/mssql/data
+    volumes:
+      - shop-data:/var/opt/mssql
+    ports:
+      - "${HOST_DB_PORT}:1433"  # Host:Container
+    networks:
+      - webshop-network
+
+volumes:
+  shop-data:
+    driver: local
+
+networks:
+  webshop-network:
+    driver: bridge

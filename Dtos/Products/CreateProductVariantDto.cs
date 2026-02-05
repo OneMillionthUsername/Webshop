@@ -1,0 +1,11 @@
+namespace Webshop.Dtos.Products
+{
+    public class CreateProductVariantDto
+    {
+        public int ProductId { get; set; }
+        public string SKU { get; set; } = string.Empty;
+        public string Attributes { get; set; } = string.Empty;
+        public decimal PriceAdjustment { get; set; }
+        public int StockQuantity { get; set; }
+    }
+}

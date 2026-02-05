@@ -1,0 +1,55 @@
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww]in32/
+[Aa]rm/
+[Aa]rm64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio cache/options
+.vs/
+
+# Visual Studio Trace Files
+*.e2e
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Environment variables and secrets
+.env
+*.env.local
+*.env.production
+secrets.yaml
+secrets.json
+
+# Docker volumes and cache
+docker-compose.override.yml
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# User secrets
+secrets/
+*.secret
+
+# OS Files
+.DS_Store
+Thumbs.db

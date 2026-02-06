@@ -48,6 +48,7 @@ namespace Webshop
             builder.Services.AddControllersWithViews();
 
             // Services registrieren (Dependency Injection)
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IPricingService, PricingService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<ICartService, CartService>();

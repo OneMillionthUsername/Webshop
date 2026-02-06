@@ -1,15 +1,21 @@
-using Webshop.Models;
+using Webshop.Dtos.Products;
+using Webshop.Dtos.Categories;
 
 namespace Webshop.Services
 {
     public interface IProductService
     {
-        Task<Product> GetProductByIdAsync(int productId);
-        Task<IEnumerable<Product>> GetProductsByCategoryAsync(int categoryId);
-        Task<IEnumerable<Product>> SearchProductsAsync(string searchTerm);
-        Task<IEnumerable<Category>> GetAllCategoriesAsync();
+        Task<IEnumerable<ProductDto>> GetAllProductsAsync();
+        Task<ProductDto?> GetProductByIdAsync(int productId);
+        Task<ProductDto> CreateProductAsync(CreateProductDto createDto);
+        Task<ProductDto> UpdateProductAsync(UpdateProductDto updateDto);
+        Task DeleteProductAsync(int productId);
+        Task<bool> ProductExistsAsync(int productId);
+        Task<IEnumerable<ProductDto>> GetProductsByCategoryAsync(int categoryId);
+        Task<IEnumerable<ProductDto>> SearchProductsAsync(string searchTerm);
+        Task<IEnumerable<CategoryDto>> GetAllCategoriesAsync();
         Task<bool> CheckInventoryAsync(int productId, int quantity);
         Task<int> GetAvailableStockAsync(int productId);
-        Task<IEnumerable<Product>> GetFeaturedProductsAsync();
+        Task<IEnumerable<ProductDto>> GetFeaturedProductsAsync();
     }
 }

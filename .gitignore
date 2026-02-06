@@ -53,3 +53,6 @@ secrets/
 # OS Files
 .DS_Store
 Thumbs.db
+
+# personal markdown
+*.md

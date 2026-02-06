@@ -14,5 +14,6 @@
 		// Navigation Properties
 		public List<OrderItem> Items { get; set; } = new();
 		public List<Payment> Payments { get; set; } = new();
+		public List<Discount> Discounts { get; set; } = new();
 	}
 }

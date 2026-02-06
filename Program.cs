@@ -70,12 +70,24 @@ namespace Webshop
                 try
                 {
                     var context = services.GetRequiredService<ApplicationDbContext>();
-                    context.Database.Migrate();
+                    
+                    // ?? Erst prüfen ob Verbindung möglich ist
+                    // Dann Migrationen anwenden
+                    if (context.Database.CanConnect())
+                    {
+                        context.Database.Migrate();
+                    }
+                    else
+                    {
+                        // Falls Verbindung fehlschlägt, DB erstellen
+                        context.Database.EnsureCreated();
+                    }
                 }
                 catch (Exception ex)
                 {
                     var logger = services.GetRequiredService<ILogger<Program>>();
                     logger.LogError(ex, "Ein Fehler ist beim Migrieren der Datenbank aufgetreten.");
+                    throw; // Exception propagieren damit Container crasht wenn DB-Init fehlschlägt
                 }
             }
 

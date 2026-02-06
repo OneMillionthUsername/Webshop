@@ -56,3 +56,6 @@ Thumbs.db
 
 # personal markdown
 *.md
+
+# Folders
+docs/

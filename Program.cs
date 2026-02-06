@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Webshop.Data;
+using Webshop.Repositories;
 using Webshop.Services;
 
 namespace Webshop
@@ -47,7 +48,11 @@ namespace Webshop
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-            // Services registrieren (Dependency Injection)
+            // Repositories registrieren (Data Access Layer)
+            builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+            builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
+            // Services registrieren (Business Logic Layer)
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IPricingService, PricingService>();
             builder.Services.AddScoped<IProductService, ProductService>();

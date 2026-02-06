@@ -1,34 +1,32 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Webshop.Data;
-using Webshop.Dtos.Categories;
+﻿using Webshop.Dtos.Categories;
 using Webshop.Models;
+using Webshop.Repositories;
 
 namespace Webshop.Services
 {
     public class CategoryService : ICategoryService
     {
-        private readonly ApplicationDbContext _context;
-        
-        public CategoryService(ApplicationDbContext context)
+        private readonly ICategoryRepository _repository;
+
+        public CategoryService(ICategoryRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         public async Task<IEnumerable<CategoryDto>> GetAllCategoriesAsync()
         {
-            return await _context.Categories
-                .Select(c => new CategoryDto
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    Description = c.Description
-                })
-                .ToListAsync();
+            var categories = await _repository.GetAllAsync();
+            return categories.Select(c => new CategoryDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Description = c.Description
+            });
         }
 
         public async Task<CategoryDto?> GetCategoryByIdAsync(int categoryId)
         {
-            var category = await _context.Categories.FindAsync(categoryId);
+            var category = await _repository.GetByIdAsync(categoryId);
             
             if (category == null)
                 return null;
@@ -46,23 +44,22 @@ namespace Webshop.Services
             var category = new Category
             {
                 Name = createDto.Name,
-                Description = createDto.Description
+                Description = createDto.Description ?? string.Empty
             };
 
-            _context.Categories.Add(category);
-            await _context.SaveChangesAsync();
+            var created = await _repository.AddAsync(category);
 
             return new CategoryDto
             {
-                Id = category.Id,
-                Name = category.Name,
-                Description = category.Description
+                Id = created.Id,
+                Name = created.Name,
+                Description = created.Description
             };
         }
 
         public async Task<CategoryDto> UpdateCategoryAsync(UpdateCategoryDto updateDto)
         {
-            var category = await _context.Categories.FindAsync(updateDto.Id);
+            var category = await _repository.GetByIdAsync(updateDto.Id);
             
             if (category == null)
                 throw new KeyNotFoundException($"Category with ID {updateDto.Id} not found.");
@@ -70,31 +67,24 @@ namespace Webshop.Services
             category.Name = updateDto.Name;
             category.Description = updateDto.Description ?? string.Empty;
 
-            _context.Categories.Update(category);
-            await _context.SaveChangesAsync();
+            var updated = await _repository.UpdateAsync(category);
 
             return new CategoryDto
             {
-                Id = category.Id,
-                Name = category.Name,
-                Description = category.Description
+                Id = updated.Id,
+                Name = updated.Name,
+                Description = updated.Description
             };
         }
 
         public async Task DeleteCategoryAsync(int categoryId)
         {
-            var category = await _context.Categories.FindAsync(categoryId);
-            
-            if (category != null)
-            {
-                _context.Categories.Remove(category);
-                await _context.SaveChangesAsync();
-            }
+            await _repository.DeleteAsync(categoryId);
         }
 
         public async Task<bool> CategoryExistsAsync(int categoryId)
         {
-            return await _context.Categories.AnyAsync(e => e.Id == categoryId);
+            return await _repository.ExistsAsync(categoryId);
         }
     }
 }

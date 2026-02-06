@@ -1,48 +1,142 @@
-using Microsoft.EntityFrameworkCore;
-using Webshop.Data;
+using Webshop.Dtos.Categories;
+using Webshop.Dtos.Products;
 using Webshop.Models;
+using Webshop.Repositories;
 
 namespace Webshop.Services
 {
     public class ProductService : IProductService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IProductRepository _productRepository;
+        private readonly ICategoryRepository _categoryRepository;
 
-        public ProductService(ApplicationDbContext context)
+        public ProductService(IProductRepository productRepository, ICategoryRepository categoryRepository)
         {
-            _context = context;
+            _productRepository = productRepository;
+            _categoryRepository = categoryRepository;
         }
 
-        public async Task<Product> GetProductByIdAsync(int productId)
+        public async Task<IEnumerable<ProductDto>> GetAllProductsAsync()
         {
-            return await _context.Products
-                .Include(p => p.Variants)
-                .FirstOrDefaultAsync(p => p.Id == productId)
-                ?? throw new KeyNotFoundException($"Product with ID {productId} not found.");
+            var products = await _productRepository.GetAllAsync();
+            return products.Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                BasePrice = p.BasePrice,
+                CategoryId = p.CategoryId
+            });
         }
 
-        public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(int categoryId)
+        public async Task<ProductDto?> GetProductByIdAsync(int productId)
         {
-            return await _context.Products
-                .Include(p => p.Variants)
-                .Where(p => EF.Property<int>(p, "CategoryId") == categoryId)
-                .ToListAsync();
+            var product = await _productRepository.GetByIdAsync(productId);
+
+            if (product == null)
+                return null;
+
+            return new ProductDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                BasePrice = product.BasePrice,
+                CategoryId = product.CategoryId
+            };
         }
 
-        public async Task<IEnumerable<Product>> SearchProductsAsync(string searchTerm)
+        public async Task<ProductDto> CreateProductAsync(CreateProductDto createDto)
         {
-            if (string.IsNullOrWhiteSpace(searchTerm))
-                return await _context.Products.Include(p => p.Variants).ToListAsync();
+            var product = new Product
+            {
+                Name = createDto.Name,
+                Description = createDto.Description,
+                BasePrice = createDto.BasePrice,
+                CategoryId = createDto.CategoryId
+            };
 
-            return await _context.Products
-                .Include(p => p.Variants)
-                .Where(p => p.Name.Contains(searchTerm) || p.Description.Contains(searchTerm))
-                .ToListAsync();
+            var created = await _productRepository.AddAsync(product);
+
+            return new ProductDto
+            {
+                Id = created.Id,
+                Name = created.Name,
+                Description = created.Description,
+                BasePrice = created.BasePrice,
+                CategoryId = created.CategoryId
+            };
         }
 
-        public async Task<IEnumerable<Category>> GetAllCategoriesAsync()
+        public async Task<ProductDto> UpdateProductAsync(UpdateProductDto updateDto)
         {
-            return await _context.Categories.ToListAsync();
+            var product = await _productRepository.GetByIdAsync(updateDto.Id);
+
+            if (product == null)
+                throw new KeyNotFoundException($"Product with ID {updateDto.Id} not found.");
+
+            product.Name = updateDto.Name;
+            product.Description = updateDto.Description;
+            product.BasePrice = updateDto.BasePrice;
+            product.CategoryId = updateDto.CategoryId;
+
+            var updated = await _productRepository.UpdateAsync(product);
+
+            return new ProductDto
+            {
+                Id = updated.Id,
+                Name = updated.Name,
+                Description = updated.Description,
+                BasePrice = updated.BasePrice,
+                CategoryId = updated.CategoryId
+            };
+        }
+
+        public async Task DeleteProductAsync(int productId)
+        {
+            await _productRepository.DeleteAsync(productId);
+        }
+
+        public async Task<bool> ProductExistsAsync(int productId)
+        {
+            return await _productRepository.ExistsAsync(productId);
+        }
+
+        public async Task<IEnumerable<ProductDto>> GetProductsByCategoryAsync(int categoryId)
+        {
+            var products = await _productRepository.GetByCategoryIdAsync(categoryId);
+            return products.Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                BasePrice = p.BasePrice,
+                CategoryId = p.CategoryId
+            });
+        }
+
+        public async Task<IEnumerable<ProductDto>> SearchProductsAsync(string searchTerm)
+        {
+            var products = await _productRepository.SearchAsync(searchTerm);
+            return products.Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                BasePrice = p.BasePrice,
+                CategoryId = p.CategoryId
+            });
+        }
+
+        public async Task<IEnumerable<CategoryDto>> GetAllCategoriesAsync()
+        {
+            var categories = await _categoryRepository.GetAllAsync();
+            return categories.Select(c => new CategoryDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Description = c.Description
+            });
         }
 
         public async Task<bool> CheckInventoryAsync(int productId, int quantity)
@@ -53,23 +147,22 @@ namespace Webshop.Services
 
         public async Task<int> GetAvailableStockAsync(int productId)
         {
-            var product = await _context.Products
-                .Include(p => p.Variants)
-                .FirstOrDefaultAsync(p => p.Id == productId);
-
-            if (product == null)
-                return 0;
-
-            return product.Variants.Sum(v => v.StockQuantity);
+            return await _productRepository.GetAvailableStockAsync(productId);
         }
 
-        public async Task<IEnumerable<Product>> GetFeaturedProductsAsync()
+        public async Task<IEnumerable<ProductDto>> GetFeaturedProductsAsync()
         {
-            // Beispiel: Top 10 Produkte (kann später durch Featured-Flag ersetzt werden)
-            return await _context.Products
-                .Include(p => p.Variants)
-                .Take(10)
-                .ToListAsync();
+            var allProducts = await _productRepository.GetAllAsync();
+            var featured = allProducts.Take(10);
+            
+            return featured.Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                BasePrice = p.BasePrice,
+                CategoryId = p.CategoryId
+            });
         }
     }
 }

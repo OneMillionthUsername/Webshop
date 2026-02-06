@@ -19,7 +19,8 @@ Das Projekt hat bereits eine User Secrets ID in der `.csproj`:
 
 ```powershell
 # Connection String als User Secret hinzufügen
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3307;Database=WebshopDb;User=webshop_user;Password=webshop_password;"
+# ?? Ersetzen Sie YOUR_SECURE_PASSWORD mit Ihrem echten Passwort!
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3307;Database=WebshopDb;User=webshop_user;Password=YOUR_SECURE_PASSWORD;"
 ```
 
 ? Das Passwort ist jetzt sicher auf Ihrem Rechner gespeichert (in: `%APPDATA%\Microsoft\UserSecrets\504c0d33-7bec-40bf-b4f6-244b75bdcc57\secrets.json`)
@@ -31,14 +32,14 @@ dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;
 dotnet user-secrets list
 
 # Sollte ausgeben:
-# ConnectionStrings:DefaultConnection = Server=localhost;Port=3307;Database=WebshopDb;User=webshop_user;Password=webshop_password;
+# ConnectionStrings:DefaultConnection = Server=localhost;Port=3307;Database=WebshopDb;User=webshop_user;Password=YOUR_SECURE_PASSWORD;
 ```
 
 ### 4. User Secret bearbeiten (falls nötig)
 
 ```powershell
-# User Secrets Datei direkt öffnen
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3307;Database=WebshopDb;User=webshop_user;Password=NEUES_PASSWORT;"
+# User Secrets neu setzen mit neuem Passwort
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3307;Database=WebshopDb;User=webshop_user;Password=NEW_SECURE_PASSWORD;"
 
 # Oder alle Secrets löschen und neu beginnen
 dotnet user-secrets clear
@@ -68,8 +69,8 @@ environment:
 
 ### Lokale Entwicklung (ohne Docker)
 ```powershell
-# 1. User Secrets setzen
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3307;Database=WebshopDb;User=webshop_user;Password=webshop_password;"
+# 1. User Secrets setzen (ersetzen Sie YOUR_SECURE_PASSWORD!)
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3307;Database=WebshopDb;User=webshop_user;Password=YOUR_SECURE_PASSWORD;"
 
 # 2. Anwendung starten
 dotnet run
@@ -86,9 +87,9 @@ docker compose up -d --build
 
 ### Neues Teammitglied?
 
-**Sende ihnen diese Anleitung** und den Befehl:
+**Sende ihnen diese Anleitung** und den Befehl (mit echtem Passwort):
 ```powershell
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3307;Database=WebshopDb;User=webshop_user;Password=DAS_ECHTE_PASSWORT;"
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3307;Database=WebshopDb;User=webshop_user;Password=YOUR_ACTUAL_PASSWORD;"
 ```
 
 ?? **Sende das Passwort über einen sicheren Kanal** (z.B. verschlüsselte E-Mail, Teams Private Chat, Password Manager)
@@ -104,7 +105,7 @@ dotnet user-secrets list
 
 **Lösung 2:** User Secrets neu setzen
 ```powershell
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3307;Database=WebshopDb;User=webshop_user;Password=webshop_password;"
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3307;Database=WebshopDb;User=webshop_user;Password=YOUR_SECURE_PASSWORD;"
 ```
 
 ### Problem: Migration schlägt fehl
@@ -120,9 +121,9 @@ Test-NetConnection -ComputerName localhost -Port 3307
 
 ### Problem: Falsches Passwort in User Secrets
 
-**Lösung:** Überschreiben
+**Lösung:** Überschreiben mit korrektem Passwort
 ```powershell
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3307;Database=WebshopDb;User=webshop_user;Password=KORREKTES_PASSWORT;"
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3307;Database=WebshopDb;User=webshop_user;Password=CORRECT_PASSWORD;"
 ```
 
 ## ?? Weitere Informationen
@@ -137,8 +138,8 @@ dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;
 - [ ] Repository geklont
 - [ ] `.env` Datei erstellt (von `.env.example` kopiert)
 - [ ] Passwörter in `.env` aktualisiert
-- [ ] User Secrets gesetzt: `dotnet user-secrets set "ConnectionStrings:DefaultConnection" "..."`
+- [ ] User Secrets gesetzt: `dotnet user-secrets set "ConnectionStrings:DefaultConnection" "...`
 - [ ] Docker Container gestartet: `docker compose up -d --build`
 - [ ] Anwendung getestet: http://localhost:8080
 
-?? Fertig! Sie können jetzt sicher entwickeln ohne Secrets ins Git zu committen.
+? Fertig! Sie können jetzt sicher entwickeln ohne Secrets ins Git zu committen.

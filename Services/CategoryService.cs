@@ -1,39 +1,90 @@
-﻿using Webshop.Data;
+﻿using Webshop.Dtos.Categories;
 using Webshop.Models;
+using Webshop.Repositories;
 
 namespace Webshop.Services
 {
     public class CategoryService : ICategoryService
     {
-        private readonly ApplicationDbContext _context;
-        public CategoryService(ApplicationDbContext context)
-        {
-            _context = context;
-		}
+        private readonly ICategoryRepository _repository;
 
-		public Task CreateCategoryAsync(Category category)
+        public CategoryService(ICategoryRepository repository)
         {
-            throw new NotImplementedException();
+            _repository = repository;
         }
 
-        public Task DeleteCategoryAsync(int categoryId)
+        public async Task<IEnumerable<CategoryDto>> GetAllCategoriesAsync()
         {
-            throw new NotImplementedException();
+            var categories = await _repository.GetAllAsync();
+            return categories.Select(c => new CategoryDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Description = c.Description
+            });
         }
 
-        public Task<IEnumerable<Category>> GetAllCategoriesAsync()
+        public async Task<CategoryDto?> GetCategoryByIdAsync(int categoryId)
         {
-            throw new NotImplementedException();
+            var category = await _repository.GetByIdAsync(categoryId);
+            
+            if (category == null)
+                return null;
+
+            return new CategoryDto
+            {
+                Id = category.Id,
+                Name = category.Name,
+                Description = category.Description
+            };
         }
 
-        public Task<Category> GetCategoryByIdAsync(int categoryId)
+        public async Task<CategoryDto> CreateCategoryAsync(CreateCategoryDto createDto)
         {
-            throw new NotImplementedException();
+            var category = new Category
+            {
+                Name = createDto.Name,
+                Description = createDto.Description ?? string.Empty
+            };
+
+            var created = await _repository.AddAsync(category);
+
+            return new CategoryDto
+            {
+                Id = created.Id,
+                Name = created.Name,
+                Description = created.Description
+            };
         }
 
-        public Task UpdateCategoryAsync(Category category)
+        public async Task<CategoryDto> UpdateCategoryAsync(UpdateCategoryDto updateDto)
         {
-            throw new NotImplementedException();
+            var category = await _repository.GetByIdAsync(updateDto.Id);
+            
+            if (category == null)
+                throw new KeyNotFoundException($"Category with ID {updateDto.Id} not found.");
+
+            category.Name = updateDto.Name;
+            category.Description = updateDto.Description ?? string.Empty;
+
+            var updated = await _repository.UpdateAsync(category);
+
+            return new CategoryDto
+            {
+                Id = updated.Id,
+                Name = updated.Name,
+                Description = updated.Description
+            };
+        }
+
+        public async Task DeleteCategoryAsync(int categoryId)
+        {
+            await _repository.DeleteAsync(categoryId);
+        }
+
+        public async Task<bool> CategoryExistsAsync(int categoryId)
+        {
+            return await _repository.ExistsAsync(categoryId);
         }
     }
 }

@@ -4,26 +4,25 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using Webshop.Data;
-using Webshop.Models;
+using Webshop.Dtos.Products;
+using Webshop.Services;
 
 namespace Webshop.Controllers
 {
     public class ProductsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IProductService _productService;
 
-        public ProductsController(ApplicationDbContext context)
+        public ProductsController(IProductService productService)
         {
-            _context = context;
+            _productService = productService;
         }
 
         // GET: Products
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Products.Include(p => p.Category);
-            return View(await applicationDbContext.ToListAsync());
+            var products = await _productService.GetAllProductsAsync();
+            return View(products);
         }
 
         // GET: Products/Details/5
@@ -34,9 +33,7 @@ namespace Webshop.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products
-                .Include(p => p.Category)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var product = await _productService.GetProductByIdAsync(id.Value);
             if (product == null)
             {
                 return NotFound();
@@ -46,9 +43,10 @@ namespace Webshop.Controllers
         }
 
         // GET: Products/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Id");
+            var categories = await _productService.GetAllCategoriesAsync();
+            ViewData["CategoryId"] = new SelectList(categories, "Id", "Name");
             return View();
         }
 
@@ -57,16 +55,17 @@ namespace Webshop.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,BasePrice,CategoryId")] Product product)
+        public async Task<IActionResult> Create(CreateProductDto createDto)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(product);
-                await _context.SaveChangesAsync();
+                await _productService.CreateProductAsync(createDto);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Id", product.CategoryId);
-            return View(product);
+            
+            var categories = await _productService.GetAllCategoriesAsync();
+            ViewData["CategoryId"] = new SelectList(categories, "Id", "Name", createDto.CategoryId);
+            return View(createDto);
         }
 
         // GET: Products/Edit/5
@@ -77,13 +76,24 @@ namespace Webshop.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products.FindAsync(id);
+            var product = await _productService.GetProductByIdAsync(id.Value);
             if (product == null)
             {
                 return NotFound();
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Id", product.CategoryId);
-            return View(product);
+
+            var updateDto = new UpdateProductDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                BasePrice = product.BasePrice,
+                CategoryId = product.CategoryId
+            };
+
+            var categories = await _productService.GetAllCategoriesAsync();
+            ViewData["CategoryId"] = new SelectList(categories, "Id", "Name", product.CategoryId);
+            return View(updateDto);
         }
 
         // POST: Products/Edit/5
@@ -91,9 +101,9 @@ namespace Webshop.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,BasePrice,CategoryId")] Product product)
+        public async Task<IActionResult> Edit(int id, UpdateProductDto updateDto)
         {
-            if (id != product.Id)
+            if (id != updateDto.Id)
             {
                 return NotFound();
             }
@@ -102,12 +112,11 @@ namespace Webshop.Controllers
             {
                 try
                 {
-                    _context.Update(product);
-                    await _context.SaveChangesAsync();
+                    await _productService.UpdateProductAsync(updateDto);
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (KeyNotFoundException)
                 {
-                    if (!ProductExists(product.Id))
+                    if (!await _productService.ProductExistsAsync(updateDto.Id))
                     {
                         return NotFound();
                     }
@@ -118,8 +127,10 @@ namespace Webshop.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Id", product.CategoryId);
-            return View(product);
+            
+            var categories = await _productService.GetAllCategoriesAsync();
+            ViewData["CategoryId"] = new SelectList(categories, "Id", "Name", updateDto.CategoryId);
+            return View(updateDto);
         }
 
         // GET: Products/Delete/5
@@ -130,9 +141,7 @@ namespace Webshop.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products
-                .Include(p => p.Category)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var product = await _productService.GetProductByIdAsync(id.Value);
             if (product == null)
             {
                 return NotFound();
@@ -146,19 +155,8 @@ namespace Webshop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var product = await _context.Products.FindAsync(id);
-            if (product != null)
-            {
-                _context.Products.Remove(product);
-            }
-
-            await _context.SaveChangesAsync();
+            await _productService.DeleteProductAsync(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool ProductExists(int id)
-        {
-            return _context.Products.Any(e => e.Id == id);
         }
     }
 }

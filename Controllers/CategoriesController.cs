@@ -7,22 +7,25 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Webshop.Data;
 using Webshop.Models;
+using Webshop.Dtos.Categories;
+using Webshop.Services;
 
 namespace Webshop.Controllers
 {
     public class CategoriesController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ICategoryService _categoryService;
 
-        public CategoriesController(ApplicationDbContext context)
+        public CategoriesController(ICategoryService categoryService)
         {
-            _context = context;
+            _categoryService = categoryService;
         }
 
         // GET: Categories
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Categories.ToListAsync());
+            var categories = await _categoryService.GetAllCategoriesAsync();
+            return View(categories);
         }
 
         // GET: Categories/Details/5
@@ -33,8 +36,7 @@ namespace Webshop.Controllers
                 return NotFound();
             }
 
-            var category = await _context.Categories
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var category = await _categoryService.GetCategoryByIdAsync(id.Value);
             if (category == null)
             {
                 return NotFound();
@@ -54,15 +56,14 @@ namespace Webshop.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description")] Category category)
+        public async Task<IActionResult> Create(CreateCategoryDto createDto)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(category);
-                await _context.SaveChangesAsync();
+                await _categoryService.CreateCategoryAsync(createDto);
                 return RedirectToAction(nameof(Index));
             }
-            return View(category);
+            return View(createDto);
         }
 
         // GET: Categories/Edit/5
@@ -73,12 +74,19 @@ namespace Webshop.Controllers
                 return NotFound();
             }
 
-            var category = await _context.Categories.FindAsync(id);
+            var category = await _categoryService.GetCategoryByIdAsync(id.Value);
             if (category == null)
             {
                 return NotFound();
             }
-            return View(category);
+
+            var updateDto = new UpdateCategoryDto
+            {
+                Id = category.Id,
+                Name = category.Name,
+                Description = category.Description
+            };
+            return View(updateDto);
         }
 
         // POST: Categories/Edit/5
@@ -86,9 +94,9 @@ namespace Webshop.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description")] Category category)
+        public async Task<IActionResult> Edit(int id, UpdateCategoryDto updateDto)
         {
-            if (id != category.Id)
+            if (id != updateDto.Id)
             {
                 return NotFound();
             }
@@ -97,12 +105,11 @@ namespace Webshop.Controllers
             {
                 try
                 {
-                    _context.Update(category);
-                    await _context.SaveChangesAsync();
+                    await _categoryService.UpdateCategoryAsync(updateDto);
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (KeyNotFoundException)
                 {
-                    if (!CategoryExists(category.Id))
+                    if (!await _categoryService.CategoryExistsAsync(updateDto.Id))
                     {
                         return NotFound();
                     }
@@ -113,7 +120,7 @@ namespace Webshop.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(category);
+            return View(updateDto);
         }
 
         // GET: Categories/Delete/5
@@ -124,8 +131,7 @@ namespace Webshop.Controllers
                 return NotFound();
             }
 
-            var category = await _context.Categories
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var category = await _categoryService.GetCategoryByIdAsync(id.Value);
             if (category == null)
             {
                 return NotFound();
@@ -139,19 +145,8 @@ namespace Webshop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var category = await _context.Categories.FindAsync(id);
-            if (category != null)
-            {
-                _context.Categories.Remove(category);
-            }
-
-            await _context.SaveChangesAsync();
+            await _categoryService.DeleteCategoryAsync(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool CategoryExists(int id)
-        {
-            return _context.Categories.Any(e => e.Id == id);
         }
     }
 }

@@ -81,14 +81,10 @@ namespace Webshop.Repositories
 
         public async Task<int> GetAvailableStockAsync(int productId)
         {
-            var product = await _context.Products
-                .Include(p => p.Variants)
-                .FirstOrDefaultAsync(p => p.Id == productId);
-
-            if (product == null)
-                return 0;
-
-            return product.Variants?.Sum(v => v.StockQuantity) ?? 0;
+            return await _context.Products
+                .Where(p => p.Id == productId)
+                .SelectMany(p => p.Variants)
+                .SumAsync(v => v.StockQuantity);
         }
     }
 }

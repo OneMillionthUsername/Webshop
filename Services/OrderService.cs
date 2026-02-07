@@ -17,7 +17,7 @@ namespace Webshop.Services
         {
             var order = new Order
             {
-                UserId = customer.Id.ToString(),
+                CustomerId = customer.Id,
                 OrderDate = DateTime.UtcNow,
                 TotalAmount = totalAmount,
                 Items = orderItems.ToList()
@@ -41,7 +41,7 @@ namespace Webshop.Services
         {
             return await _context.Orders
                 .Include(o => o.Items)
-                .Where(o => o.UserId == customerId.ToString())
+                .Where(o => o.CustomerId == customerId)
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
         }

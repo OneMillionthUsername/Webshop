@@ -4,7 +4,6 @@
     {
 		public int Id { get; set; }
 		public DateTime OrderDate { get; set; } = DateTime.UtcNow;
-		public string UserId { get; set; } = string.Empty;
 		public decimal TotalAmount { get; set; }
 
 		// Foreign Key
@@ -13,7 +12,7 @@
 
 		// Navigation Properties
 		public List<OrderItem> Items { get; set; } = new();
-		public List<Payment> Payments { get; set; } = new();
-		public List<Discount> Discounts { get; set; } = new();
+		public List<Payment>? Payments { get; set; } = new();
+		public List<Discount>? Discounts { get; set; } = new();
 	}
 }

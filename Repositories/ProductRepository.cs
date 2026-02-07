@@ -48,6 +48,8 @@ namespace Webshop.Repositories
 
         public async Task<Product> AddAsync(Product product)
         {
+            ArgumentNullException.ThrowIfNull(product, nameof(product));
+            
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
             return product;
@@ -55,6 +57,8 @@ namespace Webshop.Repositories
 
         public async Task<Product> UpdateAsync(Product product)
         {
+            ArgumentNullException.ThrowIfNull(product, nameof(product));
+            
             _context.Products.Update(product);
             await _context.SaveChangesAsync();
             return product;

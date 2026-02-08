@@ -11,6 +11,8 @@
         public string City { get; set; } = string.Empty;
         public string PostalCode { get; set; } = string.Empty;
         public DateTime RegistrationDate { get; set; } = DateTime.UtcNow;
-        public List<Order> Orders { get; set; } = new();
+        public List<Order>? Orders { get; set; } = new();
+        public bool IsActive { get; set; } = true;
+        public bool IsAnonymized { get; set; } = false;
     }
 }

@@ -67,8 +67,13 @@ namespace Webshop.Repositories
 		}
 
 		public async Task<Customer> UpdateAsync(Customer customer)
-        {
-            throw new NotImplementedException();
-        }
-    }
+		{
+			ArgumentNullException.ThrowIfNull(customer, nameof(customer));
+
+			_context.Customers.Update(customer);
+			await _context.SaveChangesAsync();
+
+			return customer;
+		}
+	}
 }

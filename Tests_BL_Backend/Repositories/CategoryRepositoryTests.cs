@@ -23,11 +23,27 @@ namespace Tests_BL_Backend.Repositories
 
         private void SeedDatabase()
         {
+            var variants = new List<ProductVariant>
+            {
+                new ProductVariant { Id = 1, ProductId = 1, StockQuantity = 10, SKU="A1", Attributes="21 Zoll" },
+                new ProductVariant { Id = 2, ProductId = 1, StockQuantity = 5, SKU="B", Attributes="27 Zoll" },
+                new ProductVariant { Id = 3, ProductId = 1, StockQuantity = 20, SKU="C", Attributes="42 Zoll" },
+				new ProductVariant { Id = 4, ProductId = 2, StockQuantity = 100, SKU="D12", Attributes="Blau" }
+			};
+            _context.ProductVariants.AddRange(variants);
+            _context.SaveChanges();
+            var products = new List<Product>
+            {
+                new Product { Id = 1, CategoryId = 1, Name="Samsung Smart TV", BasePrice=499.99m, Description="48 Zoll", Variants=variants},
+                new Product { Id = 2, CategoryId = 3, Name="Regenjacke", BasePrice=99.99m, Description="Wasserdicht", Variants=variants}
+            };
+            _context.Products.AddRange(products);
+            _context.SaveChanges();
             var categories = new List<Category>
             {
-                new Category { Id = 1, Name = "Electronics", Description = "Tech products" },
-                new Category { Id = 2, Name = "Books", Description = "Reading materials" },
-                new Category { Id = 3, Name = "Clothing", Description = "Fashion items" }
+                new Category { Id = 1, Name = "Electronics", Description = "Tech products", Products = products, IsActive = true },
+                new Category { Id = 2, Name = "Books", Description = "Reading materials", Products = { }, IsActive = false },
+                new Category { Id = 3, Name = "Clothing", Description = "Fashion items", Products = products, IsActive = true }
             };
             _context.Categories.AddRange(categories);
             _context.SaveChanges();
@@ -147,7 +163,19 @@ namespace Tests_BL_Backend.Repositories
             Assert.False(result);
         }
 
-        public void Dispose()
+        [Fact]
+        public async Task GetWithProductCountAsync_ReturnsCount()
+        {
+            // Act
+            var result = await _repository.GetAllWithProductCountAsync();
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotEmpty(result);
+            Assert.Equal(2, result.Count());
+        }
+
+		public void Dispose()
         {
             _context.Database.EnsureDeleted();
             _context.Dispose();

@@ -11,7 +11,8 @@ namespace Webshop.Repositories
         Task<Category> UpdateAsync(Category category);
         Task<bool> DeleteAsync(int id);
         Task<bool> ExistsAsync(int id);
-        Task<IEnumerable<Category>> GetWithProductCountAsync();
-        Task<Category> GetByNameAsync(string name);
-    }
+        Task<IEnumerable<Category>> GetAllWithProductCountAsync();
+        Task<Category?> GetByNameAsync(string name);
+        Task<IEnumerable<Category>> GetActiveCategoriesAsync();
+	}
 }

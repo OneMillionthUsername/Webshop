@@ -16,6 +16,7 @@ namespace Webshop.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Payment> Payments { get; set; }
+        public DbSet<Discount> Discounts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -48,6 +49,13 @@ namespace Webshop.Data
                 .WithOne(p => p.Order)
                 .HasForeignKey(p => p.OrderId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Bestellung -> Rabatte (1:N)
+            modelBuilder.Entity<Order>()
+                .HasMany(o => o.Discounts)
+                .WithOne(d => d.Order)
+                .HasForeignKey(d => d.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Kunde -> Bestellungen (1:N)
             modelBuilder.Entity<Customer>()
@@ -83,6 +91,14 @@ namespace Webshop.Data
             modelBuilder.Entity<Payment>()
                 .Property(p => p.Amount)
                 .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Discount>()
+                .Property(d => d.DiscountAmount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Discount>()
+                .Property(d => d.DiscountPercentage)
+                .HasPrecision(5, 2);
         }
     }
 }

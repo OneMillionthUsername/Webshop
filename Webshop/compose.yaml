@@ -12,7 +12,7 @@
       - webshop-network
 
   shop-db:  
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: mcr.microsoft.com/mssql/server:latest
     container_name: webshop-mssql
     restart: always
     user: root
@@ -27,6 +27,11 @@
       - "${HOST_DB_PORT}:1433"  # Host:Container
     networks:
       - webshop-network
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P YourPassword -Q "SELECT 1"
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   shop-data:

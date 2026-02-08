@@ -24,9 +24,20 @@ namespace Webshop.Repositories
         {
             var customer = await _context.Customers.FindAsync(id);
             
-            if (customer != null)
+            if (customer != null && customer.IsAnonymized != true)
             {
-                _context.Customers.Remove(customer);
+                customer.FirstName = "deleted";
+                customer.LastName = "deleted";
+                customer.Email = "deleted";
+                customer.Address = "deleted";
+                customer.City = "deleted";
+                customer.PhoneNumber = "deleted";
+                customer.PostalCode = "deleted";
+                customer.RegistrationDate = DateTime.Now;
+                customer.IsActive = false;
+                customer.IsAnonymized = true;
+
+                _context.Customers.Update(customer);
                 await _context.SaveChangesAsync();
             }
         }

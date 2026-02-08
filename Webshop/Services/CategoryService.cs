@@ -77,9 +77,9 @@ namespace Webshop.Services
             };
         }
 
-        public async Task DeleteCategoryAsync(int categoryId)
+        public async Task<bool> DeleteCategoryAsync(int categoryId)
         {
-            await _repository.DeleteAsync(categoryId);
+            return await _repository.DeleteAsync(categoryId);
         }
 
         public async Task<bool> CategoryExistsAsync(int categoryId)

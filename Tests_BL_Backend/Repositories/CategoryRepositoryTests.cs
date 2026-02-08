@@ -105,7 +105,7 @@ namespace Tests_BL_Backend.Repositories
         public async Task DeleteAsync_RemovesCategory()
         {
             // Act
-            await _repository.DeleteAsync(1);
+            var result = await _repository.DeleteAsync(1);
 
             // Assert
             var deleted = await _context.Categories.FindAsync(1);
@@ -113,16 +113,18 @@ namespace Tests_BL_Backend.Repositories
             
             var remaining = await _context.Categories.ToListAsync();
             Assert.Equal(2, remaining.Count);
+            Assert.True(result);
         }
 
         [Fact]
         public async Task DeleteAsync_WithNonExistentId_DoesNotThrow()
         {
             // Act & Assert
-            await _repository.DeleteAsync(999);
+            var result = await _repository.DeleteAsync(999);
             
             var allCategories = await _context.Categories.ToListAsync();
             Assert.Equal(3, allCategories.Count);
+            Assert.False(result);
         }
 
         [Fact]

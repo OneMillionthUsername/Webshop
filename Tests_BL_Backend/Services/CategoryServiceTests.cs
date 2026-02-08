@@ -152,7 +152,7 @@ namespace Tests_BL_Backend.Services
         {
             // Arrange
             _mockRepository.Setup(r => r.DeleteAsync(1))
-                .Returns(Task.CompletedTask);
+                .ReturnsAsync(true);
 
             // Act
             await _service.DeleteCategoryAsync(1);

@@ -57,12 +57,16 @@ namespace Webshop.Repositories
             return await _context.Customers.FindAsync(id);
         }
 
-        public async Task<Customer?> GetByOrderIdAsync(int orderId)
-        {
-            throw new NotImplementedException();
-        }
+		public async Task<Customer?> GetByOrderIdAsync(int orderId)
+		{
+			var order = await _context.Orders
+				.Include(o => o.Customer)
+				.FirstOrDefaultAsync(o => o.Id == orderId);
 
-        public async Task<Customer> UpdateAsync(Customer customer)
+			return order?.Customer;
+		}
+
+		public async Task<Customer> UpdateAsync(Customer customer)
         {
             throw new NotImplementedException();
         }

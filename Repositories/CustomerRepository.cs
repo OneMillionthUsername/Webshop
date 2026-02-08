@@ -57,11 +57,6 @@ namespace Webshop.Repositories
             return await _context.Customers.FindAsync(id);
         }
 
-        public async Task<Customer?> GetByNameAsync(string name)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<Customer?> GetByOrderIdAsync(int orderId)
         {
             throw new NotImplementedException();

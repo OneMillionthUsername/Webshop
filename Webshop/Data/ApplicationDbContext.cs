@@ -12,6 +12,7 @@ namespace Webshop.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<ProductVariant> ProductVariants { get; set; }
+        public DbSet<ProductVariantAttribute> ProductVariantAttributes { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
@@ -34,6 +35,13 @@ namespace Webshop.Data
                 .HasMany(p => p.Variants)
                 .WithOne()
                 .HasForeignKey(pv => pv.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ProductVariant -> Attribute (1:N)
+            modelBuilder.Entity<ProductVariant>()
+                .HasMany(pv => pv.Attributes)
+                .WithOne(pva => pva.ProductVariant)
+                .HasForeignKey(pva => pva.ProductVariantId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Bestellung -> Bestellpositionen (1:N)

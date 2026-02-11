@@ -24,6 +24,12 @@ namespace Tests_BL_Backend.Repositories
 
         private void SeedDatabase()
         {
+            var product1 = new Product { Id = 1, CategoryId = 1, Name="Samsung Smart TV", BasePrice=499.99m, Description="48 Zoll" };
+            var product2 = new Product { Id = 2, CategoryId = 3, Name="Regenjacke", BasePrice=99.99m, Description="Wasserdicht" };
+            
+            _context.Products.AddRange(product1, product2);
+            _context.SaveChanges();
+            
             var variants = new List<ProductVariant>
             {
                 new ProductVariant 
@@ -72,12 +78,6 @@ namespace Tests_BL_Backend.Repositories
                 }
             };
             _context.ProductVariants.AddRange(variants);
-            _context.SaveChanges();
-            
-            var product1 = new Product { Id = 1, CategoryId = 1, Name="Samsung Smart TV", BasePrice=499.99m, Description="48 Zoll" };
-            var product2 = new Product { Id = 2, CategoryId = 3, Name="Regenjacke", BasePrice=99.99m, Description="Wasserdicht" };
-            
-            _context.Products.AddRange(product1, product2);
             _context.SaveChanges();
             
             var categories = new List<Category>
@@ -205,7 +205,7 @@ namespace Tests_BL_Backend.Repositories
         }
 
         [Fact]
-        public async Task GetAllWithProductCountAsync_ReturnsCount()
+        public async Task GetAllWithProductCountAsync_ReturnsActiveCategories_WithProductCount()
         {
             // Act
             var result = await _repository.GetAllWithProductCountAsync();
@@ -243,7 +243,7 @@ namespace Tests_BL_Backend.Repositories
             Assert.Null(result);
         }
         [Fact]
-        public async Task GetActiveAsync_ReturnActiveCategories()
+        public async Task GetActiveAsync_ReturnsActiveCategories()
         {
             // Act
             var result = await _repository.GetActiveAsync();

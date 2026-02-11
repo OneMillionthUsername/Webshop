@@ -65,13 +65,15 @@ namespace Webshop.Repositories
                 .ToListAsync())
                 .Select(c => (c.Id, c.Name, c.Products.Count));
         }
-        public Task<Category?> GetByNameAsync(string name) 
+        public async Task<Category?> GetByNameAsync(string name) 
         {  
-            throw new NotImplementedException(); 
+            return await _context.Categories.FirstOrDefaultAsync(c => c.Name.ToLower() == name.ToLower());
         }
-        public Task<IEnumerable<Category>> GetActiveCategoriesAsync()
+        public async Task<IEnumerable<Category>> GetActiveAsync()
         {
-            throw new NotImplementedException(); 
+            return await _context.Categories
+                .Where(c => c.IsActive)
+                .ToListAsync();
         }
     }
 }

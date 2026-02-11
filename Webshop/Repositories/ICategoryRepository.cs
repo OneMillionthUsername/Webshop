@@ -13,6 +13,6 @@ namespace Webshop.Repositories
         Task<bool> ExistsAsync(int id);
         Task<IEnumerable<(int Id, string Name, int ProductCount)>> GetAllWithProductCountAsync();
         Task<Category?> GetByNameAsync(string name);
-        Task<IEnumerable<Category>> GetActiveCategoriesAsync();
+        Task<IEnumerable<Category>> GetActiveAsync();
 	}
 }

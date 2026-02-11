@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using NuGet.DependencyResolver;
 using Webshop.Data;
 using Webshop.Models;
 using Webshop.Repositories;
@@ -182,7 +183,35 @@ namespace Tests_BL_Backend.Repositories
 			Assert.Equal("Clothing", p2.Name);
 			Assert.Equal(1, p2.ProductCount);
 		}
+        [Fact]
+        public async Task GetByNameAsync_ReturnsCategory()
+        {
+            // Act
+            var result = await _repository.GetByNameAsync("Electronics");
 
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("Electronics", result.Name);
+        }
+        [Fact]
+        public async Task GetByNameAsync_ReturnsNull()
+        {
+            // Act
+            var result = await _repository.GetByNameAsync("");
+
+            // Assert
+            Assert.Null(result);
+        }
+        [Fact]
+        public async Task GetActiveAsync_ReturnActiveCategories()
+        {
+            // Act
+            var result = await _repository.GetActiveAsync();
+
+            // Assert
+            Assert.NotEmpty(result);
+            Assert.Equal(2, result.Count());
+        }
 		public void Dispose()
         {
             _context.Database.EnsureDeleted();

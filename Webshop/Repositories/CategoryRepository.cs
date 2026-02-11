@@ -56,14 +56,14 @@ namespace Webshop.Repositories
         {
             return await _context.Categories.AnyAsync(e => e.Id == id);
         }
-        //TODO: Hier überlegen, was ich eigentlich zurück haben will.
-        public async Task<IEnumerable<Category>> GetAllWithProductCountAsync()
+        public async Task<IEnumerable<(int Id, string Name, int ProductCount)>> GetAllWithProductCountAsync()
         {
-            return await _context.Categories
+            return (await _context.Categories
+                .Where(c => c.IsActive)
                 .Include(c => c.Products)
-                .ThenInclude(p => p.Variants)
-                .Where(c => c.IsActive == true)
-                .ToListAsync();
+                .AsNoTracking()
+                .ToListAsync())
+                .Select(c => (c.Id, c.Name, c.Products.Count));
         }
         public Task<Category?> GetByNameAsync(string name) 
         {  

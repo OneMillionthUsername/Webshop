@@ -20,11 +20,11 @@ namespace Webshop.Repositories
                 .FirstOrDefaultAsync(pv => pv.Id == id);
         }
 
-        public async Task<ProductVariant?> GetBySKUAsync(int sku)
+        public async Task<ProductVariant?> GetBySKUAsync(string sku)
         {
             return await _context.ProductVariants
                 .Include(pv => pv.Attributes)
-                .FirstOrDefaultAsync(pv => pv.SKU == sku.ToString());
+                .FirstOrDefaultAsync(pv => pv.SKU == sku);
         }
 
         public async Task<ProductVariant> AddAsync(ProductVariant variant)

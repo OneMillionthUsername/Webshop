@@ -26,10 +26,50 @@ namespace Tests_BL_Backend.Repositories
         {
             var variants = new List<ProductVariant>
             {
-                new ProductVariant { Id = 1, ProductId = 1, StockQuantity = 10, SKU="A1", Attributes="21 Zoll" },
-                new ProductVariant { Id = 2, ProductId = 1, StockQuantity = 5, SKU="B", Attributes="27 Zoll" },
-                new ProductVariant { Id = 3, ProductId = 1, StockQuantity = 20, SKU="C", Attributes="42 Zoll" },
-                new ProductVariant { Id = 4, ProductId = 2, StockQuantity = 100, SKU="D12", Attributes="Blau" }
+                new ProductVariant 
+                { 
+                    Id = 1, 
+                    ProductId = 1, 
+                    StockQuantity = 10, 
+                    SKU="A1",
+                    Attributes = new List<ProductVariantAttribute>
+                    {
+                        new ProductVariantAttribute { AttributeName = "Size", AttributeValue = "21 Zoll" }
+                    }
+                },
+                new ProductVariant 
+                { 
+                    Id = 2, 
+                    ProductId = 1, 
+                    StockQuantity = 5, 
+                    SKU="B",
+                    Attributes = new List<ProductVariantAttribute>
+                    {
+                        new ProductVariantAttribute { AttributeName = "Size", AttributeValue = "27 Zoll" }
+                    }
+                },
+                new ProductVariant 
+                { 
+                    Id = 3, 
+                    ProductId = 1, 
+                    StockQuantity = 20, 
+                    SKU="C",
+                    Attributes = new List<ProductVariantAttribute>
+                    {
+                        new ProductVariantAttribute { AttributeName = "Size", AttributeValue = "42 Zoll" }
+                    }
+                },
+                new ProductVariant 
+                { 
+                    Id = 4, 
+                    ProductId = 2, 
+                    StockQuantity = 100, 
+                    SKU="D12",
+                    Attributes = new List<ProductVariantAttribute>
+                    {
+                        new ProductVariantAttribute { AttributeName = "Color", AttributeValue = "Blau" }
+                    }
+                }
             };
             _context.ProductVariants.AddRange(variants);
             _context.SaveChanges();

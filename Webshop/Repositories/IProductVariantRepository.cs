@@ -5,7 +5,7 @@ namespace Webshop.Repositories
     public interface IProductVariantRepository
     {
         Task<ProductVariant?> GetByIdAsync(int id);
-        Task<ProductVariant?> GetBySKUAsync(int sku);
+        Task<ProductVariant?> GetBySKUAsync(string sku);
         Task<ProductVariant> AddAsync(ProductVariant variant);
         Task<ProductVariant> UpdateAsync(ProductVariant variant);
         Task<bool> DeleteAsync(int id);

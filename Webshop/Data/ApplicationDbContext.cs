@@ -17,6 +17,7 @@ namespace Webshop.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Payment> Payments { get; set; }
+        public DbSet<PaymentDetail> PaymentDetails { get; set; }
         public DbSet<Discount> Discounts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -107,6 +108,19 @@ namespace Webshop.Data
             modelBuilder.Entity<Discount>()
                 .Property(d => d.DiscountPercentage)
                 .HasPrecision(5, 2);
+
+            modelBuilder.Entity<PaymentDetail>()
+                .UseTphMappingStrategy()
+                .HasDiscriminator<string>("PaymentDetailType")
+                .HasValue<CreditCardPaymentDetail>("CreditCard")
+                .HasValue<EpsPaymentDetail>("EPS")
+                .HasValue<PayPalPaymentDetail>("PayPal");
+
+            modelBuilder.Entity<PaymentDetail>()
+                .HasOne(pd => pd.Payment)
+                .WithOne(p => p.Details)
+                .HasForeignKey<PaymentDetail>(pd => pd.PaymentId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

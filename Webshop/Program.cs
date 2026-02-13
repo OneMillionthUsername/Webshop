@@ -51,6 +51,11 @@ namespace Webshop
             // Repositories registrieren (Data Access Layer)
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+            builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+            builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
+            builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+
 
             // Services registrieren (Business Logic Layer)
             builder.Services.AddScoped<ICategoryService, CategoryService>();

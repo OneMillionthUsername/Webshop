@@ -38,17 +38,33 @@ namespace Webshop.Repositories
 
         public async Task<IEnumerable<Order>> GetAllAsync()
         {
-			return await _context.Orders.ToListAsync();
+			return await _context.Orders
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.ProductVariant)
+                .Include(o => o.Customer)
+                .Include(o => o.Payments)
+                .ToListAsync();
 		}
 
         public async Task<IEnumerable<Order>> GetByCustomerIdAsync(int customerId)
         {
-            return await _context.Orders.Where(o => o.CustomerId == customerId).ToListAsync();
+            return await _context.Orders
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.ProductVariant)
+                .Include(o => o.Payments)
+                .Where(o => o.CustomerId == customerId)
+                .ToListAsync();
         }
 
         public async Task<Order?> GetByIdAsync(int id)
         {
-            return _context.Orders.FirstOrDefault(o => o.Id == id);
+            return await _context.Orders
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.ProductVariant)
+                .Include(o => o.Customer)
+                .Include(o => o.Payments)
+                .Include(o => o.Discounts)
+                .FirstOrDefaultAsync(o => o.Id == id);
         }
 
         public async Task<Order> UpdateAsync(Order order)

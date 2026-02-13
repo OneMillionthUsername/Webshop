@@ -56,7 +56,8 @@ Thumbs.db
 
 # personal markdown
 *.md
+Finished.txt
 
 # Folders
-docs/
+# docs/
 TestResults/

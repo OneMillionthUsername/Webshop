@@ -369,8 +369,7 @@ namespace Tests_BL_Backend.Repositories
             Assert.All(result, p => Assert.True(p.PaymentDate >= startDate && p.PaymentDate <= endDate));
         }
 
-        [Fact(Skip="ProductionBugSuspected")]
-        [Trait("Category", "ProductionBugSuspected")]
+        [Fact]
         public async Task GetByDateRangeAsync_SameDay_ReturnsAllPaymentsOnThatDay()
         {
             // Arrange

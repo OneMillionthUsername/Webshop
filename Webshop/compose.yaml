@@ -10,6 +10,9 @@
       - ConnectionStrings__SqlServerConnection=Server=${DB_SERVER},${DB_PORT};Database=${MSSQL_DATABASE};User Id=${DB_USER};Password=${SA_PASSWORD};Encrypt=false;
     networks:
       - webshop-network
+    depends_on:
+      shop-db:
+        condition: service_healthy
 
   shop-db:  
     image: mcr.microsoft.com/mssql/server:latest
@@ -28,7 +31,7 @@
     networks:
       - webshop-network
     healthcheck:
-      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P YourPassword -Q "SELECT 1"
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P ${SA_PASSWORD} -C -Q "SELECT 1"
       interval: 10s
       timeout: 5s
       retries: 5

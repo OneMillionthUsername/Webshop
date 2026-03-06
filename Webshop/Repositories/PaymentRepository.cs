@@ -305,5 +305,18 @@ namespace Webshop.Repositories
             await _context.SaveChangesAsync();
             return payments;
         }
+
+        public async Task<Payment?> GetByTransactionIdAsync(string transactionId)
+        {
+            return await _context.Payments
+                .FirstOrDefaultAsync(p => p.TransactionId == transactionId);
+        }
+
+        public async Task<IEnumerable<Payment>> GetAllByOrderIdAsync(int orderId)
+        {
+            return await _context.Payments
+                .Where(p => p.OrderId == orderId)
+                .ToListAsync();
+        }
     }
 }

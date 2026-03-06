@@ -1,16 +1,15 @@
-using Microsoft.EntityFrameworkCore;
-using Webshop.Data;
 using Webshop.Models;
+using Webshop.Repositories;
 
 namespace Webshop.Services
 {
     public class OrderService : IOrderService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IOrderRepository _orderRepository;
 
-        public OrderService(ApplicationDbContext context)
+        public OrderService(IOrderRepository orderRepository)
         {
-            _context = context;
+            _orderRepository = orderRepository;
         }
 
         public async Task<Order> CreateOrderAsync(Customer customer, IEnumerable<OrderItem> orderItems, decimal totalAmount)
@@ -23,43 +22,29 @@ namespace Webshop.Services
                 Items = orderItems.ToList()
             };
 
-            await _context.Orders.AddAsync(order);
-            await _context.SaveChangesAsync();
-
-            return order;
+            return await _orderRepository.AddAsync(order);
         }
 
         public async Task<Order> GetOrderByIdAsync(int orderId)
         {
-            return await _context.Orders
-                .Include(o => o.Items)
-                .FirstOrDefaultAsync(o => o.Id == orderId)
+            return await _orderRepository.GetByIdAsync(orderId)
                 ?? throw new KeyNotFoundException($"Order with ID {orderId} not found.");
         }
 
         public async Task<IEnumerable<Order>> GetOrdersByCustomerAsync(int customerId)
         {
-            return await _context.Orders
-                .Include(o => o.Items)
-                .Where(o => o.CustomerId == customerId)
-                .OrderByDescending(o => o.OrderDate)
-                .ToListAsync();
+            var orders = await _orderRepository.GetByCustomerIdAsync(customerId);
+            return orders.OrderByDescending(o => o.OrderDate);
         }
 
         public async Task UpdateOrderStatusAsync(int orderId, string status)
         {
-            var order = await _context.Orders.FindAsync(orderId)
-                ?? throw new KeyNotFoundException($"Order with ID {orderId} not found.");
-
-            // Status über Shadow Property oder neues Property setzen
-            _context.Entry(order).Property("Status").CurrentValue = status;
-            await _context.SaveChangesAsync();
+            await _orderRepository.UpdateStatusAsync(orderId, status);
         }
 
         public async Task<bool> CancelOrderAsync(int orderId)
         {
-            var order = await _context.Orders.FindAsync(orderId);
-            if (order == null)
+            if (!await _orderRepository.ExistsAsync(orderId))
                 return false;
 
             await UpdateOrderStatusAsync(orderId, "Cancelled");
@@ -69,10 +54,10 @@ namespace Webshop.Services
         public async Task<string> GenerateInvoiceAsync(int orderId)
         {
             var order = await GetOrderByIdAsync(orderId);
-            
+
             // Vereinfacht: Invoice-Generierung (PDF-Bibliothek wie QuestPDF verwenden)
-            var invoicePath = $"Invoices/Invoice_{orderId}_{DateTime.UtcNow:yyyyMMdd}.pdf";
-            
+            var invoicePath = $"Invoices/Invoice_{order.Id}_{DateTime.UtcNow:yyyyMMdd}.pdf";
+
             // TODO: Implementierung mit PDF-Generator
             // await GeneratePdfAsync(order, invoicePath);
 
@@ -81,10 +66,8 @@ namespace Webshop.Services
 
         public async Task<IEnumerable<Order>> GetAllOrdersAsync()
         {
-            return await _context.Orders
-                .Include(o => o.Items)
-                .OrderByDescending(o => o.OrderDate)
-                .ToListAsync();
+            var orders = await _orderRepository.GetAllAsync();
+            return orders.OrderByDescending(o => o.OrderDate);
         }
     }
 }

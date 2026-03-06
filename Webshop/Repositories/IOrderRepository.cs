@@ -11,5 +11,6 @@ namespace Webshop.Repositories
         Task<Order> UpdateAsync(Order order);
         Task DeleteAsync(int id);
         Task<bool> ExistsAsync(int id);
+        Task UpdateStatusAsync(int id, string status);
     }
 }

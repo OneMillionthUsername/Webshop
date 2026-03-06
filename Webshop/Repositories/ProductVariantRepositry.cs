@@ -92,5 +92,11 @@ namespace Webshop.Repositories
                     a.AttributeValue == attributeValue))
                 .ToListAsync();
         }
+
+        public async Task<ProductVariant?> GetByProductIdAndVariantIdAsync(int productId, int? variantId)
+        {
+            return await _context.ProductVariants
+                .FirstOrDefaultAsync(v => v.ProductId == productId && (variantId == null || v.Id == variantId));
+        }
     }
 }

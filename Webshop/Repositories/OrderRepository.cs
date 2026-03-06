@@ -67,13 +67,22 @@ namespace Webshop.Repositories
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
 
-        public async Task<Order> UpdateAsync(Order order)
-        {
+		public async Task<Order> UpdateAsync(Order order)
+		{
 			ArgumentNullException.ThrowIfNull(order, nameof(order));
 
-            _context.Orders.Update(order);
-            await _context.SaveChangesAsync();
-            return order;
+			_context.Orders.Update(order);
+			await _context.SaveChangesAsync();
+			return order;
 		}
-    }
+
+		public async Task UpdateStatusAsync(int id, string status)
+		{
+			var order = await _context.Orders.FindAsync(id)
+				?? throw new KeyNotFoundException($"Order with ID {id} not found.");
+
+			_context.Entry(order).Property("Status").CurrentValue = status;
+			await _context.SaveChangesAsync();
+		}
+	}
 }

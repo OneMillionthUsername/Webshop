@@ -55,5 +55,9 @@ namespace Webshop.Repositories
         // Bulk-Operationen
         Task<int> UpdateStatusBulkAsync(IEnumerable<int> ids, string newStatus);
         Task<IEnumerable<Payment>> AddRangeAsync(IEnumerable<Payment> payments);
+
+        // Ergänzungen für Service-Layer
+        Task<Payment?> GetByTransactionIdAsync(string transactionId);
+        Task<IEnumerable<Payment>> GetAllByOrderIdAsync(int orderId);
     }
 }

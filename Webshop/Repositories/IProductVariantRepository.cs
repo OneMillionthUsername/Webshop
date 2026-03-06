@@ -15,5 +15,6 @@ namespace Webshop.Repositories
         Task<IEnumerable<ProductVariant>> GetLowQuantity();
         Task<IEnumerable<ProductVariant>> GetEmpty();
         Task<IEnumerable<ProductVariant>> GetByAttributeAsync(string attributeName, string attributeValue);
+        Task<ProductVariant?> GetByProductIdAndVariantIdAsync(int productId, int? variantId);
     }
 }

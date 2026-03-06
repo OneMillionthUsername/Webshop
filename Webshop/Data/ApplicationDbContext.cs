@@ -50,6 +50,7 @@ namespace Webshop.Data
                 .HasMany(o => o.Items)
                 .WithOne(oi => oi.Order)
                 .HasForeignKey(oi => oi.OrderId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Bestellung -> Zahlungen (1:N)

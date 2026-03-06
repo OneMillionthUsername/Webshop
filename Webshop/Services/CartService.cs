@@ -1,24 +1,30 @@
-using Microsoft.EntityFrameworkCore;
-using Webshop.Data;
 using Webshop.Models;
+using Webshop.Repositories;
 
 namespace Webshop.Services
 {
     public class CartService : ICartService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IOrderItemRepository _orderItemRepository;
+        private readonly IProductVariantRepository _productVariantRepository;
+        private readonly IProductRepository _productRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CartService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
+        public CartService(
+            IOrderItemRepository orderItemRepository,
+            IProductVariantRepository productVariantRepository,
+            IProductRepository productRepository,
+            IHttpContextAccessor httpContextAccessor)
         {
-            _context = context;
+            _orderItemRepository = orderItemRepository;
+            _productVariantRepository = productVariantRepository;
+            _productRepository = productRepository;
             _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task AddToCartAsync(int productId, int quantity, int? variantId = null)
         {
-            var variant = await _context.ProductVariants
-                .FirstOrDefaultAsync(v => v.ProductId == productId && (variantId == null || v.Id == variantId))
+            var variant = await _productVariantRepository.GetByProductIdAndVariantIdAsync(productId, variantId)
                 ?? throw new KeyNotFoundException("Product variant not found.");
 
             if (variant.StockQuantity < quantity)
@@ -31,45 +37,34 @@ namespace Webshop.Services
                 PriceAtPurchase = await CalculateVariantPriceAsync(variant)
             };
 
-            // Temporärer Warenkorb in Session (vereinfacht)
-            // In Produktion: Datenbank mit CartId
-            await _context.OrderItems.AddAsync(cartItem);
-            await _context.SaveChangesAsync();
+            await _orderItemRepository.AddAsync(cartItem);
         }
 
         public async Task RemoveFromCartAsync(int cartItemId)
         {
-            var cartItem = await _context.OrderItems.FindAsync(cartItemId);
-            if (cartItem != null)
-            {
-                _context.OrderItems.Remove(cartItem);
-                await _context.SaveChangesAsync();
-            }
+            await _orderItemRepository.DeleteAsync(cartItemId);
         }
 
         public async Task UpdateQuantityAsync(int cartItemId, int quantity)
         {
-            var cartItem = await _context.OrderItems.FindAsync(cartItemId);
+            var cartItem = await _orderItemRepository.GetByIdAsync(cartItemId);
             if (cartItem != null)
             {
                 cartItem.Quantity = quantity;
-                await _context.SaveChangesAsync();
+                await _orderItemRepository.UpdateAsync(cartItem);
             }
         }
 
         public async Task<IEnumerable<OrderItem>> GetCartItemsAsync()
         {
-            // Vereinfacht: Alle OrderItems ohne Order (Warenkorb)
-            return await _context.OrderItems
-                .Where(oi => EF.Property<int?>(oi, "OrderId") == null)
-                .ToListAsync();
+            return await _orderItemRepository.GetCartItemsAsync();
         }
 
         public async Task ClearCartAsync()
         {
             var cartItems = await GetCartItemsAsync();
-            _context.OrderItems.RemoveRange(cartItems);
-            await _context.SaveChangesAsync();
+            foreach (var item in cartItems)
+                await _orderItemRepository.DeleteAsync(item.Id);
         }
 
         public async Task<decimal> CalculateCartTotalAsync()
@@ -83,7 +78,7 @@ namespace Webshop.Services
             var cartItems = await GetCartItemsAsync();
             foreach (var item in cartItems)
             {
-                var variant = await _context.ProductVariants.FindAsync(item.ProductVariantId);
+                var variant = await _productVariantRepository.GetByIdAsync(item.ProductVariantId);
                 if (variant == null || variant.StockQuantity < item.Quantity)
                     return false;
             }
@@ -92,7 +87,7 @@ namespace Webshop.Services
 
         private async Task<decimal> CalculateVariantPriceAsync(ProductVariant variant)
         {
-            var product = await _context.Products.FindAsync(variant.ProductId);
+            var product = await _productRepository.GetByIdAsync(variant.ProductId);
             return product!.BasePrice + variant.PriceAdjustment;
         }
     }

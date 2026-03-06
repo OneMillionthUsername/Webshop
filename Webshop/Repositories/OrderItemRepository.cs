@@ -35,5 +35,37 @@ namespace Webshop.Repositories
 				.Where(oi => oi.ProductVariantId == productVariantId)
 				.ToListAsync();
 		}
+
+		public async Task<IEnumerable<OrderItem>> GetCartItemsAsync()
+		{
+			return await _context.OrderItems
+				.Where(oi => oi.OrderId == null)
+				.ToListAsync();
+		}
+
+		public async Task<OrderItem> AddAsync(OrderItem orderItem)
+		{
+			await _context.OrderItems.AddAsync(orderItem);
+			await _context.SaveChangesAsync();
+			return orderItem;
+		}
+
+		public async Task<OrderItem> UpdateAsync(OrderItem orderItem)
+		{
+			_context.OrderItems.Update(orderItem);
+			await _context.SaveChangesAsync();
+			return orderItem;
+		}
+
+		public async Task<bool> DeleteAsync(int id)
+		{
+			var item = await _context.OrderItems.FindAsync(id);
+			if (item == null)
+				return false;
+
+			_context.OrderItems.Remove(item);
+			await _context.SaveChangesAsync();
+			return true;
+		}
 	}
 }

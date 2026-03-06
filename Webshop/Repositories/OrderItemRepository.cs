@@ -25,6 +25,7 @@ namespace Webshop.Repositories
 			return await _context.OrderItems
 				.Include(oi => oi.ProductVariant)
 				.Where(oi => oi.OrderId == orderId)
+				.OrderBy(oi => oi.Id)
 				.ToListAsync();
 		}
 

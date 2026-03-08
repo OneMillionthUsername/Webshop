@@ -1,4 +1,5 @@
-﻿using Webshop.Dtos.Categories;
+﻿using AutoMapper;
+using Webshop.Dtos.Categories;
 using Webshop.Models;
 using Webshop.Repositories;
 
@@ -7,21 +8,18 @@ namespace Webshop.Services
     public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository _repository;
+        private readonly IMapper _mapper;
 
-        public CategoryService(ICategoryRepository repository)
+        public CategoryService(ICategoryRepository repository, IMapper mapper)
         {
             _repository = repository;
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<CategoryDto>> GetAllCategoriesAsync()
         {
             var categories = await _repository.GetAllAsync();
-            return categories.Select(c => new CategoryDto
-            {
-                Id = c.Id,
-                Name = c.Name,
-                Description = c.Description
-            });
+            return _mapper.Map<IEnumerable<CategoryDto>>(categories);
         }
 
         public async Task<CategoryDto?> GetCategoryByIdAsync(int categoryId)
@@ -31,30 +29,16 @@ namespace Webshop.Services
             if (category == null)
                 return null;
 
-            return new CategoryDto
-            {
-                Id = category.Id,
-                Name = category.Name,
-                Description = category.Description
-            };
+            return _mapper.Map<CategoryDto>(category);
         }
 
         public async Task<CategoryDto> CreateCategoryAsync(CreateCategoryDto createDto)
         {
-            var category = new Category
-            {
-                Name = createDto.Name,
-                Description = createDto.Description ?? string.Empty
-            };
+            var category = _mapper.Map<Category>(createDto);
 
             var created = await _repository.AddAsync(category);
 
-            return new CategoryDto
-            {
-                Id = created.Id,
-                Name = created.Name,
-                Description = created.Description
-            };
+            return _mapper.Map<CategoryDto>(created);
         }
 
         public async Task<CategoryDto> UpdateCategoryAsync(UpdateCategoryDto updateDto)
@@ -64,17 +48,11 @@ namespace Webshop.Services
             if (category == null)
                 throw new KeyNotFoundException($"Category with ID {updateDto.Id} not found.");
 
-            category.Name = updateDto.Name;
-            category.Description = updateDto.Description ?? string.Empty;
+            _mapper.Map(updateDto, category);
 
             var updated = await _repository.UpdateAsync(category);
 
-            return new CategoryDto
-            {
-                Id = updated.Id,
-                Name = updated.Name,
-                Description = updated.Description
-            };
+            return _mapper.Map<CategoryDto>(updated);
         }
 
         public async Task<bool> DeleteCategoryAsync(int categoryId)

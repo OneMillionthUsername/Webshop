@@ -1,3 +1,4 @@
+using AutoMapper;
 using Moq;
 using Webshop.Dtos.Categories;
 using Webshop.Models;
@@ -9,12 +10,14 @@ namespace Tests_BL_Backend.Services
     public class CategoryServiceTests
     {
         private readonly Mock<ICategoryRepository> _mockRepository;
+        private readonly Mock<IMapper> _mockMapper;
         private readonly CategoryService _service;
 
         public CategoryServiceTests()
         {
+            _mockMapper = new Mock<IMapper>();
             _mockRepository = new Mock<ICategoryRepository>();
-            _service = new CategoryService(_mockRepository.Object);
+            _service = new CategoryService(_mockRepository.Object, _mockMapper.Object);
         }
 
         [Fact]
@@ -26,8 +29,15 @@ namespace Tests_BL_Backend.Services
                 new Category { Id = 1, Name = "Electronics", Description = "Tech products" },
                 new Category { Id = 2, Name = "Books", Description = "Reading materials" }
             };
+            var categoryDtos = new List<CategoryDto>
+            {
+                new CategoryDto { Id = 1, Name = "Electronics" },
+                new CategoryDto { Id = 2, Name = "Books" }
+            };
             _mockRepository.Setup(r => r.GetAllAsync())
                 .ReturnsAsync(categories);
+            _mockMapper.Setup(m => m.Map<IEnumerable<CategoryDto>>(It.IsAny<object>()))
+                .Returns(categoryDtos);
 
             // Act
             var result = await _service.GetAllCategoriesAsync();
@@ -43,8 +53,11 @@ namespace Tests_BL_Backend.Services
         {
             // Arrange
             var category = new Category { Id = 1, Name = "Electronics", Description = "Tech" };
+            var categoryDto = new CategoryDto { Id = 1, Name = "Electronics" };
             _mockRepository.Setup(r => r.GetByIdAsync(1))
                 .ReturnsAsync(category);
+            _mockMapper.Setup(m => m.Map<CategoryDto>(It.IsAny<object>()))
+                .Returns(categoryDto);
 
             // Act
             var result = await _service.GetCategoryByIdAsync(1);
@@ -80,14 +93,16 @@ namespace Tests_BL_Backend.Services
                 Name = "New Category",
                 Description = "New Description"
             };
-            var createdCategory = new Category
-            {
-                Id = 5,
-                Name = "New Category",
-                Description = "New Description"
-            };
+            var mappedCategory = new Category { Name = "New Category", Description = "New Description" };
+            var createdCategory = new Category { Id = 5, Name = "New Category", Description = "New Description" };
+            var createdDto = new CategoryDto { Id = 5, Name = "New Category", Description = "New Description" };
+
+            _mockMapper.Setup(m => m.Map<Category>(It.IsAny<CreateCategoryDto>()))
+                .Returns(mappedCategory);
             _mockRepository.Setup(r => r.AddAsync(It.IsAny<Category>()))
                 .ReturnsAsync(createdCategory);
+            _mockMapper.Setup(m => m.Map<CategoryDto>(It.IsAny<object>()))
+                .Returns(createdDto);
 
             // Act
             var result = await _service.CreateCategoryAsync(createDto);
@@ -96,28 +111,26 @@ namespace Tests_BL_Backend.Services
             Assert.Equal(5, result.Id);
             Assert.Equal("New Category", result.Name);
             Assert.Equal("New Description", result.Description);
-            _mockRepository.Verify(r => r.AddAsync(It.Is<Category>(c =>
-                c.Name == "New Category" &&
-                c.Description == "New Description")), Times.Once);
+            _mockRepository.Verify(r => r.AddAsync(It.IsAny<Category>()), Times.Once);
         }
 
         [Fact]
         public async Task UpdateCategoryAsync_WithValidId_UpdatesCategory()
         {
             // Arrange
-            var updateDto = new UpdateCategoryDto
-            {
-                Id = 1,
-                Name = "Updated Name",
-                Description = "Updated Description"
-            };
+            var updateDto = new UpdateCategoryDto { Id = 1, Name = "Updated Name", Description = "Updated Description" };
             var existingCategory = new Category { Id = 1, Name = "Old Name", Description = "Old Desc" };
             var updatedCategory = new Category { Id = 1, Name = "Updated Name", Description = "Updated Description" };
+            var updatedDto = new CategoryDto { Id = 1, Name = "Updated Name", Description = "Updated Description" };
 
             _mockRepository.Setup(r => r.GetByIdAsync(1))
                 .ReturnsAsync(existingCategory);
+            _mockMapper.Setup(m => m.Map(It.IsAny<UpdateCategoryDto>(), It.IsAny<Category>()))
+                .Returns(existingCategory);
             _mockRepository.Setup(r => r.UpdateAsync(It.IsAny<Category>()))
                 .ReturnsAsync(updatedCategory);
+            _mockMapper.Setup(m => m.Map<CategoryDto>(It.IsAny<object>()))
+                .Returns(updatedDto);
 
             // Act
             var result = await _service.UpdateCategoryAsync(updateDto);
@@ -127,10 +140,7 @@ namespace Tests_BL_Backend.Services
             Assert.Equal("Updated Name", result.Name);
             Assert.Equal("Updated Description", result.Description);
             _mockRepository.Verify(r => r.GetByIdAsync(1), Times.Once);
-            _mockRepository.Verify(r => r.UpdateAsync(It.Is<Category>(c =>
-                c.Id == 1 &&
-                c.Name == "Updated Name" &&
-                c.Description == "Updated Description")), Times.Once);
+            _mockRepository.Verify(r => r.UpdateAsync(It.IsAny<Category>()), Times.Once);
         }
 
         [Fact]

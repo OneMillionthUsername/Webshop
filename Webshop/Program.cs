@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Webshop.Data;
 using Webshop.Repositories;
 using Webshop.Services;
+using AutoMapper;
+using Webshop.Mapping;
 
 namespace Webshop
 {
@@ -66,6 +68,9 @@ namespace Webshop
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
+
+			// AutoMapper
+			builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 
             var app = builder.Build();
 

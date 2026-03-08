@@ -100,8 +100,6 @@ Controller → Service (Interface) → Repository (Interface) → DbContext
 - **Service Layer** – enthält die Geschäftslogik, arbeitet ausschließlich mit Repository-Interfaces
 - **Controller Layer** – nimmt HTTP-Anfragen entgegen, delegiert an Services, gibt DTOs zurück
 
-Weitere Details: [`docs/`](Webshop/docs/)
-
 ## Domänenmodell
 
 | Modell | Beschreibung |

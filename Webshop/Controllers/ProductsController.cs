@@ -12,10 +12,12 @@ namespace Webshop.Controllers
     public class ProductsController : Controller
     {
         private readonly IProductService _productService;
+        private readonly ICategoryService _categoryService;
 
-        public ProductsController(IProductService productService)
+        public ProductsController(IProductService productService, ICategoryService categoryService)
         {
             _productService = productService;
+            _categoryService = categoryService;
         }
 
         // GET: Products
@@ -45,7 +47,7 @@ namespace Webshop.Controllers
         // GET: Products/Create
         public async Task<IActionResult> Create()
         {
-            var categories = await _productService.GetAllCategoriesAsync();
+            var categories = await _categoryService.GetAllCategoriesAsync();
             ViewData["CategoryId"] = new SelectList(categories, "Id", "Name");
             return View();
         }
@@ -63,7 +65,7 @@ namespace Webshop.Controllers
                 return RedirectToAction(nameof(Index));
             }
             
-            var categories = await _productService.GetAllCategoriesAsync();
+            var categories = await _categoryService.GetAllCategoriesAsync();
             ViewData["CategoryId"] = new SelectList(categories, "Id", "Name", createDto.CategoryId);
             return View(createDto);
         }
@@ -91,7 +93,7 @@ namespace Webshop.Controllers
                 CategoryId = product.CategoryId
             };
 
-            var categories = await _productService.GetAllCategoriesAsync();
+            var categories = await _categoryService.GetAllCategoriesAsync();
             ViewData["CategoryId"] = new SelectList(categories, "Id", "Name", product.CategoryId);
             return View(updateDto);
         }
@@ -128,7 +130,7 @@ namespace Webshop.Controllers
                 return RedirectToAction(nameof(Index));
             }
             
-            var categories = await _productService.GetAllCategoriesAsync();
+            var categories = await _categoryService.GetAllCategoriesAsync();
             ViewData["CategoryId"] = new SelectList(categories, "Id", "Name", updateDto.CategoryId);
             return View(updateDto);
         }

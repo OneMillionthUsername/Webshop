@@ -1,4 +1,4 @@
-using Webshop.Dtos.Categories;
+using AutoMapper;
 using Webshop.Dtos.Products;
 using Webshop.Models;
 using Webshop.Repositories;
@@ -8,25 +8,18 @@ namespace Webshop.Services
     public class ProductService : IProductService
     {
         private readonly IProductRepository _productRepository;
-        private readonly ICategoryRepository _categoryRepository;
+        private readonly IMapper _mapper;
 
-        public ProductService(IProductRepository productRepository, ICategoryRepository categoryRepository)
+        public ProductService(IProductRepository productRepository, IMapper mapper)
         {
             _productRepository = productRepository;
-            _categoryRepository = categoryRepository;
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<ProductDto>> GetAllProductsAsync()
         {
             var products = await _productRepository.GetAllAsync();
-            return products.Select(p => new ProductDto
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Description = p.Description,
-                BasePrice = p.BasePrice,
-                CategoryId = p.CategoryId
-            });
+            return _mapper.Map<IEnumerable<ProductDto>>(products);
         }
 
         public async Task<ProductDto?> GetProductByIdAsync(int productId)
@@ -36,36 +29,16 @@ namespace Webshop.Services
             if (product == null)
                 return null;
 
-            return new ProductDto
-            {
-                Id = product.Id,
-                Name = product.Name,
-                Description = product.Description,
-                BasePrice = product.BasePrice,
-                CategoryId = product.CategoryId
-            };
+            return _mapper.Map<ProductDto>(product);
         }
 
         public async Task<ProductDto> CreateProductAsync(CreateProductDto createDto)
         {
-            var product = new Product
-            {
-                Name = createDto.Name,
-                Description = createDto.Description,
-                BasePrice = createDto.BasePrice,
-                CategoryId = createDto.CategoryId
-            };
+            var product = _mapper.Map<Product>(createDto);
 
             var created = await _productRepository.AddAsync(product);
 
-            return new ProductDto
-            {
-                Id = created.Id,
-                Name = created.Name,
-                Description = created.Description,
-                BasePrice = created.BasePrice,
-                CategoryId = created.CategoryId
-            };
+            return _mapper.Map<ProductDto>(created);
         }
 
         public async Task<ProductDto> UpdateProductAsync(UpdateProductDto updateDto)
@@ -75,21 +48,11 @@ namespace Webshop.Services
             if (product == null)
                 throw new KeyNotFoundException($"Product with ID {updateDto.Id} not found.");
 
-            product.Name = updateDto.Name;
-            product.Description = updateDto.Description;
-            product.BasePrice = updateDto.BasePrice;
-            product.CategoryId = updateDto.CategoryId;
+            _mapper.Map(updateDto, product);
 
             var updated = await _productRepository.UpdateAsync(product);
 
-            return new ProductDto
-            {
-                Id = updated.Id,
-                Name = updated.Name,
-                Description = updated.Description,
-                BasePrice = updated.BasePrice,
-                CategoryId = updated.CategoryId
-            };
+            return _mapper.Map<ProductDto>(updated);
         }
 
         public async Task DeleteProductAsync(int productId)
@@ -105,38 +68,13 @@ namespace Webshop.Services
         public async Task<IEnumerable<ProductDto>> GetProductsByCategoryAsync(int categoryId)
         {
             var products = await _productRepository.GetByCategoryIdAsync(categoryId);
-            return products.Select(p => new ProductDto
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Description = p.Description,
-                BasePrice = p.BasePrice,
-                CategoryId = p.CategoryId
-            });
+            return _mapper.Map<IEnumerable<ProductDto>>(products);
         }
 
         public async Task<IEnumerable<ProductDto>> SearchProductsAsync(string searchTerm)
         {
             var products = await _productRepository.SearchAsync(searchTerm);
-            return products.Select(p => new ProductDto
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Description = p.Description,
-                BasePrice = p.BasePrice,
-                CategoryId = p.CategoryId
-            });
-        }
-
-        public async Task<IEnumerable<CategoryDto>> GetAllCategoriesAsync()
-        {
-            var categories = await _categoryRepository.GetAllAsync();
-            return categories.Select(c => new CategoryDto
-            {
-                Id = c.Id,
-                Name = c.Name,
-                Description = c.Description
-            });
+            return _mapper.Map<IEnumerable<ProductDto>>(products);
         }
 
         public async Task<bool> CheckInventoryAsync(int productId, int quantity)
@@ -155,14 +93,7 @@ namespace Webshop.Services
             var allProducts = await _productRepository.GetAllAsync();
             var featured = allProducts.Take(10);
             
-            return featured.Select(p => new ProductDto
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Description = p.Description,
-                BasePrice = p.BasePrice,
-                CategoryId = p.CategoryId
-            });
+            return _mapper.Map<IEnumerable<ProductDto>>(featured);
         }
     }
 }

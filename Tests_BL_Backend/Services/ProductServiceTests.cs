@@ -1,5 +1,5 @@
-﻿using Moq;
-using Webshop.Dtos.Categories;
+using AutoMapper;
+using Moq;
 using Webshop.Dtos.Products;
 using Webshop.Models;
 using Webshop.Repositories;
@@ -10,14 +10,14 @@ namespace Tests_BL_Backend.Services
 	public class ProductServiceTests
 	{
 		private readonly Mock<IProductRepository> _mockProductRepository;
-		private readonly Mock<ICategoryRepository> _mockCategoryRepository;
+		private readonly Mock<IMapper> _mockMapper;
 		private readonly ProductService _service;
 
 		public ProductServiceTests()
 		{
 			_mockProductRepository = new Mock<IProductRepository>();
-			_mockCategoryRepository = new Mock<ICategoryRepository>();
-			_service = new ProductService(_mockProductRepository.Object, _mockCategoryRepository.Object);
+			_mockMapper = new Mock<IMapper>();
+			_service = new ProductService(_mockProductRepository.Object, _mockMapper.Object);
 		}
 
 		// -------------------------
@@ -33,7 +33,13 @@ namespace Tests_BL_Backend.Services
 				new Product { Id = 1, Name = "Laptop", Description = "A laptop", BasePrice = 999.99m, CategoryId = 1 },
 				new Product { Id = 2, Name = "Mouse", Description = "A mouse", BasePrice = 29.99m, CategoryId = 1 }
 			};
+			var productDtos = new List<ProductDto>
+			{
+				new ProductDto { Id = 1, Name = "Laptop", BasePrice = 999.99m, CategoryId = 1 },
+				new ProductDto { Id = 2, Name = "Mouse", BasePrice = 29.99m, CategoryId = 1 }
+			};
 			_mockProductRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(products);
+			_mockMapper.Setup(m => m.Map<IEnumerable<ProductDto>>(It.IsAny<object>())).Returns(productDtos);
 
 			// Act
 			var result = await _service.GetAllProductsAsync();
@@ -50,6 +56,7 @@ namespace Tests_BL_Backend.Services
 		{
 			// Arrange
 			_mockProductRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Product>());
+			_mockMapper.Setup(m => m.Map<IEnumerable<ProductDto>>(It.IsAny<object>())).Returns(new List<ProductDto>());
 
 			// Act
 			var result = await _service.GetAllProductsAsync();
@@ -68,7 +75,9 @@ namespace Tests_BL_Backend.Services
 		{
 			// Arrange
 			var product = new Product { Id = 1, Name = "Laptop", Description = "A laptop", BasePrice = 999.99m, CategoryId = 1 };
+			var productDto = new ProductDto { Id = 1, Name = "Laptop", BasePrice = 999.99m, CategoryId = 1 };
 			_mockProductRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(product);
+			_mockMapper.Setup(m => m.Map<ProductDto>(It.IsAny<object>())).Returns(productDto);
 
 			// Act
 			var result = await _service.GetProductByIdAsync(1);
@@ -104,8 +113,13 @@ namespace Tests_BL_Backend.Services
 		{
 			// Arrange
 			var createDto = new CreateProductDto { Name = "Keyboard", Description = "Mechanical", BasePrice = 149.99m, CategoryId = 2 };
+			var mappedProduct = new Product { Name = "Keyboard", Description = "Mechanical", BasePrice = 149.99m, CategoryId = 2 };
 			var createdProduct = new Product { Id = 5, Name = "Keyboard", Description = "Mechanical", BasePrice = 149.99m, CategoryId = 2 };
+			var createdDto = new ProductDto { Id = 5, Name = "Keyboard", BasePrice = 149.99m, CategoryId = 2 };
+
+			_mockMapper.Setup(m => m.Map<Product>(It.IsAny<CreateProductDto>())).Returns(mappedProduct);
 			_mockProductRepository.Setup(r => r.AddAsync(It.IsAny<Product>())).ReturnsAsync(createdProduct);
+			_mockMapper.Setup(m => m.Map<ProductDto>(It.IsAny<object>())).Returns(createdDto);
 
 			// Act
 			var result = await _service.CreateProductAsync(createDto);
@@ -130,9 +144,12 @@ namespace Tests_BL_Backend.Services
 			var existingProduct = new Product { Id = 1, Name = "Old Name", Description = "Old Desc", BasePrice = 50m, CategoryId = 1 };
 			var updatedProduct = new Product { Id = 1, Name = "New Name", Description = "New Desc", BasePrice = 75m, CategoryId = 2 };
 			var updateDto = new UpdateProductDto { Id = 1, Name = "New Name", Description = "New Desc", BasePrice = 75m, CategoryId = 2 };
+			var updatedDto = new ProductDto { Id = 1, Name = "New Name", BasePrice = 75m, CategoryId = 2 };
 
 			_mockProductRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(existingProduct);
+			_mockMapper.Setup(m => m.Map(It.IsAny<UpdateProductDto>(), It.IsAny<Product>())).Returns(existingProduct);
 			_mockProductRepository.Setup(r => r.UpdateAsync(It.IsAny<Product>())).ReturnsAsync(updatedProduct);
+			_mockMapper.Setup(m => m.Map<ProductDto>(It.IsAny<object>())).Returns(updatedDto);
 
 			// Act
 			var result = await _service.UpdateProductAsync(updateDto);
@@ -220,7 +237,13 @@ namespace Tests_BL_Backend.Services
 				new Product { Id = 1, Name = "Laptop", Description = "A laptop", BasePrice = 999m, CategoryId = 1 },
 				new Product { Id = 2, Name = "Desktop", Description = "A desktop", BasePrice = 799m, CategoryId = 1 }
 			};
+			var productDtos = new List<ProductDto>
+			{
+				new ProductDto { Id = 1, Name = "Laptop", BasePrice = 999m, CategoryId = 1 },
+				new ProductDto { Id = 2, Name = "Desktop", BasePrice = 799m, CategoryId = 1 }
+			};
 			_mockProductRepository.Setup(r => r.GetByCategoryIdAsync(1)).ReturnsAsync(products);
+			_mockMapper.Setup(m => m.Map<IEnumerable<ProductDto>>(It.IsAny<object>())).Returns(productDtos);
 
 			// Act
 			var result = await _service.GetProductsByCategoryAsync(1);
@@ -236,6 +259,7 @@ namespace Tests_BL_Backend.Services
 		{
 			// Arrange
 			_mockProductRepository.Setup(r => r.GetByCategoryIdAsync(999)).ReturnsAsync(new List<Product>());
+			_mockMapper.Setup(m => m.Map<IEnumerable<ProductDto>>(It.IsAny<object>())).Returns(new List<ProductDto>());
 
 			// Act
 			var result = await _service.GetProductsByCategoryAsync(999);
@@ -257,7 +281,12 @@ namespace Tests_BL_Backend.Services
 			{
 				new Product { Id = 1, Name = "Gaming Laptop", Description = "Fast", BasePrice = 1500m, CategoryId = 1 }
 			};
+			var productDtos = new List<ProductDto>
+			{
+				new ProductDto { Id = 1, Name = "Gaming Laptop", BasePrice = 1500m, CategoryId = 1 }
+			};
 			_mockProductRepository.Setup(r => r.SearchAsync("Laptop")).ReturnsAsync(products);
+			_mockMapper.Setup(m => m.Map<IEnumerable<ProductDto>>(It.IsAny<object>())).Returns(productDtos);
 
 			// Act
 			var result = await _service.SearchProductsAsync("Laptop");
@@ -273,6 +302,7 @@ namespace Tests_BL_Backend.Services
 		{
 			// Arrange
 			_mockProductRepository.Setup(r => r.SearchAsync("xyz")).ReturnsAsync(new List<Product>());
+			_mockMapper.Setup(m => m.Map<IEnumerable<ProductDto>>(It.IsAny<object>())).Returns(new List<ProductDto>());
 
 			// Act
 			var result = await _service.SearchProductsAsync("xyz");
@@ -280,30 +310,6 @@ namespace Tests_BL_Backend.Services
 			// Assert
 			Assert.Empty(result);
 			_mockProductRepository.Verify(r => r.SearchAsync("xyz"), Times.Once);
-		}
-
-		// -------------------------
-		// GetAllCategoriesAsync
-		// -------------------------
-
-		[Fact]
-		public async Task GetAllCategoriesAsync_ReturnsCategoryDtos()
-		{
-			// Arrange
-			var categories = new List<Category>
-			{
-				new Category { Id = 1, Name = "Electronics", Description = "Tech" },
-				new Category { Id = 2, Name = "Accessories", Description = "Acc" }
-			};
-			_mockCategoryRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(categories);
-
-			// Act
-			var result = await _service.GetAllCategoriesAsync();
-
-			// Assert
-			Assert.Equal(2, result.Count());
-			Assert.Equal("Electronics", result.First().Name);
-			_mockCategoryRepository.Verify(r => r.GetAllAsync(), Times.Once);
 		}
 
 		// -------------------------
@@ -378,7 +384,11 @@ namespace Tests_BL_Backend.Services
 			var products = Enumerable.Range(1, 15)
 				.Select(i => new Product { Id = i, Name = $"Product {i}", Description = "", BasePrice = i * 10m, CategoryId = 1 })
 				.ToList();
+			var productDtos = Enumerable.Range(1, 10)
+				.Select(i => new ProductDto { Id = i, Name = $"Product {i}", BasePrice = i * 10m, CategoryId = 1 })
+				.ToList();
 			_mockProductRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(products);
+			_mockMapper.Setup(m => m.Map<IEnumerable<ProductDto>>(It.IsAny<object>())).Returns(productDtos);
 
 			// Act
 			var result = await _service.GetFeaturedProductsAsync();
@@ -396,7 +406,11 @@ namespace Tests_BL_Backend.Services
 			var products = Enumerable.Range(1, 4)
 				.Select(i => new Product { Id = i, Name = $"Product {i}", Description = "", BasePrice = i * 10m, CategoryId = 1 })
 				.ToList();
+			var productDtos = Enumerable.Range(1, 4)
+				.Select(i => new ProductDto { Id = i, Name = $"Product {i}", BasePrice = i * 10m, CategoryId = 1 })
+				.ToList();
 			_mockProductRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(products);
+			_mockMapper.Setup(m => m.Map<IEnumerable<ProductDto>>(It.IsAny<object>())).Returns(productDtos);
 
 			// Act
 			var result = await _service.GetFeaturedProductsAsync();

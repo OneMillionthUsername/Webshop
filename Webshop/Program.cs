@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Webshop.Data;
 using Webshop.Repositories;
 using Webshop.Services;
+using AutoMapper;
+using Webshop.Mapping;
 
 namespace Webshop
 {
@@ -51,6 +53,12 @@ namespace Webshop
             // Repositories registrieren (Data Access Layer)
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddScoped<IProductVariantRepository, ProductVariantRepositry>();
+            builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+            builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+            builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
+            builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+
 
             // Services registrieren (Business Logic Layer)
             builder.Services.AddScoped<ICategoryService, CategoryService>();
@@ -60,6 +68,9 @@ namespace Webshop
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
+
+			// AutoMapper
+			builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 
             var app = builder.Build();
 

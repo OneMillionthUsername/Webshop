@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using NuGet.DependencyResolver;
 using Webshop.Data;
 using Webshop.Models;
 using Webshop.Repositories;
@@ -23,11 +24,67 @@ namespace Tests_BL_Backend.Repositories
 
         private void SeedDatabase()
         {
+            var product1 = new Product { Id = 1, CategoryId = 1, Name="Samsung Smart TV", BasePrice=499.99m, Description="48 Zoll" };
+            var product2 = new Product { Id = 2, CategoryId = 3, Name="Regenjacke", BasePrice=99.99m, Description="Wasserdicht" };
+            
+            _context.Products.AddRange(product1, product2);
+            _context.SaveChanges();
+            
+            var variants = new List<ProductVariant>
+            {
+                new ProductVariant 
+                { 
+                    Id = 1, 
+                    ProductId = 1, 
+                    StockQuantity = 10, 
+                    SKU="A1",
+                    Attributes = new List<ProductVariantAttribute>
+                    {
+                        new ProductVariantAttribute { AttributeName = "Size", AttributeValue = "21 Zoll" }
+                    }
+                },
+                new ProductVariant 
+                { 
+                    Id = 2, 
+                    ProductId = 1, 
+                    StockQuantity = 5, 
+                    SKU="B",
+                    Attributes = new List<ProductVariantAttribute>
+                    {
+                        new ProductVariantAttribute { AttributeName = "Size", AttributeValue = "27 Zoll" }
+                    }
+                },
+                new ProductVariant 
+                { 
+                    Id = 3, 
+                    ProductId = 1, 
+                    StockQuantity = 20, 
+                    SKU="C",
+                    Attributes = new List<ProductVariantAttribute>
+                    {
+                        new ProductVariantAttribute { AttributeName = "Size", AttributeValue = "42 Zoll" }
+                    }
+                },
+                new ProductVariant 
+                { 
+                    Id = 4, 
+                    ProductId = 2, 
+                    StockQuantity = 100, 
+                    SKU="D12",
+                    Attributes = new List<ProductVariantAttribute>
+                    {
+                        new ProductVariantAttribute { AttributeName = "Color", AttributeValue = "Blau" }
+                    }
+                }
+            };
+            _context.ProductVariants.AddRange(variants);
+            _context.SaveChanges();
+            
             var categories = new List<Category>
             {
-                new Category { Id = 1, Name = "Electronics", Description = "Tech products" },
-                new Category { Id = 2, Name = "Books", Description = "Reading materials" },
-                new Category { Id = 3, Name = "Clothing", Description = "Fashion items" }
+                new Category { Id = 1, Name = "Electronics", Description = "Tech products", Products = new List<Product> { product1 }, IsActive = true },
+                new Category { Id = 2, Name = "Books", Description = "Reading materials", Products = new List<Product> { }, IsActive = false },
+                new Category { Id = 3, Name = "Clothing", Description = "Fashion items", Products = new List<Product> { product2 }, IsActive = true }
             };
             _context.Categories.AddRange(categories);
             _context.SaveChanges();
@@ -105,7 +162,7 @@ namespace Tests_BL_Backend.Repositories
         public async Task DeleteAsync_RemovesCategory()
         {
             // Act
-            await _repository.DeleteAsync(1);
+            var result = await _repository.DeleteAsync(1);
 
             // Assert
             var deleted = await _context.Categories.FindAsync(1);
@@ -113,16 +170,18 @@ namespace Tests_BL_Backend.Repositories
             
             var remaining = await _context.Categories.ToListAsync();
             Assert.Equal(2, remaining.Count);
+            Assert.True(result);
         }
 
         [Fact]
         public async Task DeleteAsync_WithNonExistentId_DoesNotThrow()
         {
             // Act & Assert
-            await _repository.DeleteAsync(999);
+            var result = await _repository.DeleteAsync(999);
             
             var allCategories = await _context.Categories.ToListAsync();
             Assert.Equal(3, allCategories.Count);
+            Assert.False(result);
         }
 
         [Fact]
@@ -145,7 +204,55 @@ namespace Tests_BL_Backend.Repositories
             Assert.False(result);
         }
 
-        public void Dispose()
+        [Fact]
+        public async Task GetAllWithProductCountAsync_ReturnsActiveCategories_WithProductCount()
+        {
+            // Act
+            var result = await _repository.GetAllWithProductCountAsync();
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotEmpty(result);
+            Assert.Equal(2, result.Count());
+
+            var p1 = result.First(c => c.Id == 1);
+            Assert.Equal("Electronics", p1.Name);
+            Assert.Equal(1, p1.ProductCount);
+
+            var p2 = result.First(c => c.Id == 3);
+			Assert.Equal("Clothing", p2.Name);
+			Assert.Equal(1, p2.ProductCount);
+		}
+        [Fact]
+        public async Task GetByNameAsync_ReturnsCategory()
+        {
+            // Act
+            var result = await _repository.GetByNameAsync("Electronics");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("Electronics", result.Name);
+        }
+        [Fact]
+        public async Task GetByNameAsync_ReturnsNull()
+        {
+            // Act
+            var result = await _repository.GetByNameAsync("");
+
+            // Assert
+            Assert.Null(result);
+        }
+        [Fact]
+        public async Task GetActiveAsync_ReturnsActiveCategories()
+        {
+            // Act
+            var result = await _repository.GetActiveAsync();
+
+            // Assert
+            Assert.NotEmpty(result);
+            Assert.Equal(2, result.Count());
+        }
+		public void Dispose()
         {
             _context.Database.EnsureDeleted();
             _context.Dispose();

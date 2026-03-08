@@ -12,10 +12,12 @@ namespace Webshop.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<ProductVariant> ProductVariants { get; set; }
+        public DbSet<ProductVariantAttribute> ProductVariantAttributes { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Payment> Payments { get; set; }
+        public DbSet<PaymentDetail> PaymentDetails { get; set; }
         public DbSet<Discount> Discounts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -36,11 +38,19 @@ namespace Webshop.Data
                 .HasForeignKey(pv => pv.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // ProductVariant -> Attribute (1:N)
+            modelBuilder.Entity<ProductVariant>()
+                .HasMany(pv => pv.Attributes)
+                .WithOne(pva => pva.ProductVariant)
+                .HasForeignKey(pva => pva.ProductVariantId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Bestellung -> Bestellpositionen (1:N)
             modelBuilder.Entity<Order>()
                 .HasMany(o => o.Items)
                 .WithOne(oi => oi.Order)
                 .HasForeignKey(oi => oi.OrderId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Bestellung -> Zahlungen (1:N)
@@ -99,6 +109,19 @@ namespace Webshop.Data
             modelBuilder.Entity<Discount>()
                 .Property(d => d.DiscountPercentage)
                 .HasPrecision(5, 2);
+
+            modelBuilder.Entity<PaymentDetail>()
+                .UseTphMappingStrategy()
+                .HasDiscriminator<string>("PaymentDetailType")
+                .HasValue<CreditCardPaymentDetail>("CreditCard")
+                .HasValue<EpsPaymentDetail>("EPS")
+                .HasValue<PayPalPaymentDetail>("PayPal");
+
+            modelBuilder.Entity<PaymentDetail>()
+                .HasOne(pd => pd.Payment)
+                .WithOne(p => p.Details)
+                .HasForeignKey<PaymentDetail>(pd => pd.PaymentId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

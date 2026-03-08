@@ -33,8 +33,26 @@ namespace Tests_BL_Backend.Repositories
 
             var variants = new List<ProductVariant>
             {
-                new ProductVariant { Id = 1, Attributes = "good", ProductId = 1, StockQuantity = 15},
-                new ProductVariant { Id = 2, Attributes = "very good", ProductId = 2, StockQuantity = 30}
+                new ProductVariant 
+                { 
+                    Id = 1, 
+                    ProductId = 1, 
+                    StockQuantity = 15,
+                    Attributes = new List<ProductVariantAttribute>
+                    {
+                        new ProductVariantAttribute { AttributeName = "Condition", AttributeValue = "good" }
+                    }
+                },
+                new ProductVariant 
+                { 
+                    Id = 2, 
+                    ProductId = 2, 
+                    StockQuantity = 30,
+                    Attributes = new List<ProductVariantAttribute>
+                    {
+                        new ProductVariantAttribute { AttributeName = "Condition", AttributeValue = "very good" }
+                    }
+                }
             };
 
 			_context.Categories.AddRange(categories);

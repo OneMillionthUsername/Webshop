@@ -10,12 +10,14 @@ namespace Tests_BL_Backend.Controllers
     public class ProductsControllerTests
     {
         private readonly Mock<IProductService> _mockProductService;
+        private readonly Mock<ICategoryService> _mockCategoryService;
         private readonly ProductsController _controller;
 
         public ProductsControllerTests()
         {
             _mockProductService = new Mock<IProductService>();
-            _controller = new ProductsController(_mockProductService.Object);
+            _mockCategoryService = new Mock<ICategoryService>();
+            _controller = new ProductsController(_mockProductService.Object, _mockCategoryService.Object);
         }
 
         [Fact]
@@ -93,7 +95,7 @@ namespace Tests_BL_Backend.Controllers
                 new CategoryDto { Id = 1, Name = "Category 1" },
                 new CategoryDto { Id = 2, Name = "Category 2" }
             };
-            _mockProductService.Setup(s => s.GetAllCategoriesAsync())
+            _mockCategoryService.Setup(s => s.GetAllCategoriesAsync())
                 .ReturnsAsync(categories);
 
             // Act
@@ -102,7 +104,7 @@ namespace Tests_BL_Backend.Controllers
             // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
             Assert.NotNull(viewResult.ViewData["CategoryId"]);
-            _mockProductService.Verify(s => s.GetAllCategoriesAsync(), Times.Once);
+            _mockCategoryService.Verify(s => s.GetAllCategoriesAsync(), Times.Once);
         }
 
         [Fact]
@@ -146,7 +148,7 @@ namespace Tests_BL_Backend.Controllers
             {
                 new CategoryDto { Id = 1, Name = "Category 1" }
             };
-            _mockProductService.Setup(s => s.GetAllCategoriesAsync())
+            _mockCategoryService.Setup(s => s.GetAllCategoriesAsync())
                 .ReturnsAsync(categories);
 
             // Act
@@ -176,7 +178,7 @@ namespace Tests_BL_Backend.Controllers
             };
             _mockProductService.Setup(s => s.GetProductByIdAsync(1))
                 .ReturnsAsync(product);
-            _mockProductService.Setup(s => s.GetAllCategoriesAsync())
+            _mockCategoryService.Setup(s => s.GetAllCategoriesAsync())
                 .ReturnsAsync(categories);
 
             // Act

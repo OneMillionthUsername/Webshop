@@ -100,8 +100,6 @@ Controller → Service (Interface) → Repository (Interface) → DbContext
 - **Service Layer** – enthält die Geschäftslogik, arbeitet ausschließlich mit Repository-Interfaces
 - **Controller Layer** – nimmt HTTP-Anfragen entgegen, delegiert an Services, gibt DTOs zurück
 
-Weitere Details: [`docs/`](Webshop/docs/)
-
 ## Domänenmodell
 
 | Modell | Beschreibung |
@@ -114,11 +112,3 @@ Weitere Details: [`docs/`](Webshop/docs/)
 | `Customer` | Kundenstammdaten |
 | `Payment` | Zahlungsinformationen zu einer Bestellung |
 | `Discount` | Rabattdefinitionen |
-
-## Gutscheincodes (PricingService)
-
-| Code | Rabatt |
-|---|---|
-| `SUMMER10` | 10 % |
-| `WELCOME20` | 20 % |
-| `VIP30` | 30 % |

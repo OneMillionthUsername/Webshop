@@ -9,7 +9,7 @@ namespace Webshop.Services
         Task<CategoryDto?> GetCategoryByIdAsync(int categoryId);
         Task<CategoryDto> CreateCategoryAsync(CreateCategoryDto createDto);
         Task<CategoryDto> UpdateCategoryAsync(UpdateCategoryDto updateDto);
-        Task DeleteCategoryAsync(int categoryId);
+        Task<bool> DeleteCategoryAsync(int categoryId);
         Task<bool> CategoryExistsAsync(int categoryId);
     }
 }

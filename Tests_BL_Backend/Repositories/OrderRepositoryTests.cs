@@ -25,6 +25,14 @@ namespace Tests_BL_Backend.Repositories
         }
         private void SeedDatabase()
         {
+            var productVariants = new List<ProductVariant>
+            {
+                new ProductVariant { Id = 1, ProductId = 1, SKU = "VAR-001", StockQuantity = 100, PriceAdjustment = 0m },
+                new ProductVariant { Id = 2, ProductId = 1, SKU = "VAR-002", StockQuantity = 50, PriceAdjustment = 10m }
+            };
+            _context.ProductVariants.AddRange(productVariants);
+            _context.SaveChanges();
+
             var itemsCustomer1 = new List<OrderItem>
             {
                 new OrderItem { Id = 1, OrderId = 1, ProductVariantId = 1, PriceAtPurchase = 99.99m, Quantity = 5},
@@ -162,13 +170,21 @@ namespace Tests_BL_Backend.Repositories
         public async Task AddAsync_ReturnOrder()
         {
             // Arrange
+            var newOrderItem = new OrderItem 
+            { 
+                ProductVariantId = 1, 
+                PriceAtPurchase = 199.99m, 
+                Quantity = 2 
+            };
+
             Order order = new Order
             {
                 Id = 4,
-                CustomerId = 5,
-                Items = { },
+                CustomerId = 1,
+                Items = new List<OrderItem> { newOrderItem },
+                Payments = new List<Payment>(),
                 OrderDate = DateTime.Now,
-                TotalAmount = 5
+                TotalAmount = 399.98m
             };
 
             // Act
@@ -180,6 +196,9 @@ namespace Tests_BL_Backend.Repositories
             Assert.NotNull(result);
             Assert.Equal(order.Id, result.Id);
             Assert.Equal(order.TotalAmount, result.TotalAmount);
+            Assert.Single(result.Items);
+            Assert.NotNull(result.Items.First().ProductVariant);
+            Assert.Equal(1, result.Items.First().ProductVariantId);
         }
         [Fact]
         public async Task AddAsync_ThrowsEx()

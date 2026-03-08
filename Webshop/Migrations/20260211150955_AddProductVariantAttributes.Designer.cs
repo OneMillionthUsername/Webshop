@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Webshop.Data;
 
@@ -11,9 +12,11 @@ using Webshop.Data;
 namespace Webshop.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260211150955_AddProductVariantAttributes")]
+    partial class AddProductVariantAttributes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -174,7 +177,7 @@ namespace Webshop.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("OrderId")
+                    b.Property<int>("OrderId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("PriceAtPurchase")
@@ -234,34 +237,6 @@ namespace Webshop.Migrations
                     b.HasIndex("OrderId");
 
                     b.ToTable("Payments");
-                });
-
-            modelBuilder.Entity("Webshop.Models.PaymentDetail", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("PaymentDetailType")
-                        .IsRequired()
-                        .HasMaxLength(13)
-                        .HasColumnType("nvarchar(13)");
-
-                    b.Property<int>("PaymentId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PaymentId")
-                        .IsUnique();
-
-                    b.ToTable("PaymentDetails");
-
-                    b.HasDiscriminator<string>("PaymentDetailType").HasValue("PaymentDetail");
-
-                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Webshop.Models.Product", b =>
@@ -349,71 +324,6 @@ namespace Webshop.Migrations
                     b.ToTable("ProductVariantAttributes");
                 });
 
-            modelBuilder.Entity("Webshop.Models.CreditCardPaymentDetail", b =>
-                {
-                    b.HasBaseType("Webshop.Models.PaymentDetail");
-
-                    b.Property<string>("CardBrand")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ExpiryMonth")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ExpiryYear")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Last4")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasDiscriminator().HasValue("CreditCard");
-                });
-
-            modelBuilder.Entity("Webshop.Models.EpsPaymentDetail", b =>
-                {
-                    b.HasBaseType("Webshop.Models.PaymentDetail");
-
-                    b.Property<string>("BankName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProviderPaymentId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Reference")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.ToTable("PaymentDetails", t =>
-                        {
-                            t.Property("ProviderPaymentId")
-                                .HasColumnName("EpsPaymentDetail_ProviderPaymentId");
-                        });
-
-                    b.HasDiscriminator().HasValue("EPS");
-                });
-
-            modelBuilder.Entity("Webshop.Models.PayPalPaymentDetail", b =>
-                {
-                    b.HasBaseType("Webshop.Models.PaymentDetail");
-
-                    b.Property<string>("PayerEmail")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProviderPaymentId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasDiscriminator().HasValue("PayPal");
-                });
-
             modelBuilder.Entity("Webshop.Models.Discount", b =>
                 {
                     b.HasOne("Webshop.Models.Order", "Order")
@@ -441,7 +351,8 @@ namespace Webshop.Migrations
                     b.HasOne("Webshop.Models.Order", "Order")
                         .WithMany("Items")
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Webshop.Models.ProductVariant", "ProductVariant")
                         .WithMany()
@@ -463,17 +374,6 @@ namespace Webshop.Migrations
                         .IsRequired();
 
                     b.Navigation("Order");
-                });
-
-            modelBuilder.Entity("Webshop.Models.PaymentDetail", b =>
-                {
-                    b.HasOne("Webshop.Models.Payment", "Payment")
-                        .WithOne("Details")
-                        .HasForeignKey("Webshop.Models.PaymentDetail", "PaymentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Payment");
                 });
 
             modelBuilder.Entity("Webshop.Models.Product", b =>
@@ -524,11 +424,6 @@ namespace Webshop.Migrations
                     b.Navigation("Items");
 
                     b.Navigation("Payments");
-                });
-
-            modelBuilder.Entity("Webshop.Models.Payment", b =>
-                {
-                    b.Navigation("Details");
                 });
 
             modelBuilder.Entity("Webshop.Models.Product", b =>

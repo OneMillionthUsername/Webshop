@@ -290,7 +290,7 @@ namespace Tests_BL_Backend.Controllers
         {
             // Arrange
             _mockCategoryService.Setup(s => s.DeleteCategoryAsync(1))
-                .Returns(Task.CompletedTask);
+                .ReturnsAsync(true);
             
             // Act
             var result = await _controller.DeleteConfirmed(1);

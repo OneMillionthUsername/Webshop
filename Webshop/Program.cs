@@ -1,9 +1,11 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Webshop.Data;
+using Webshop.Mapping;
 using Webshop.Repositories;
 using Webshop.Services;
-using AutoMapper;
-using Webshop.Mapping;
+using Webshop.Validators.Categories;
 
 namespace Webshop
 {
@@ -44,7 +46,7 @@ namespace Webshop
                 }
             });
 
-            // HttpContextAccessor für Session/Cookie-Zugriff
+            // HttpContextAccessor fï¿½r Session/Cookie-Zugriff
             builder.Services.AddHttpContextAccessor();
 
             // Add services to the container.
@@ -72,9 +74,13 @@ namespace Webshop
 			// AutoMapper
 			builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 
+			// FluentValidation
+			builder.Services.AddFluentValidationAutoValidation();
+			builder.Services.AddValidatorsFromAssemblyContaining<CreateCategoryDtoValidator>();
+
             var app = builder.Build();
 
-            // Datenbank-Migrationen automatisch beim Start ausführen
+            // Datenbank-Migrationen automatisch beim Start ausfï¿½hren
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
@@ -82,7 +88,7 @@ namespace Webshop
                 {
                     var context = services.GetRequiredService<ApplicationDbContext>();
                     
-                    // ?? Erst prüfen ob Verbindung möglich ist
+                    // ?? Erst prï¿½fen ob Verbindung mï¿½glich ist
                     // Dann Migrationen anwenden
                     if (context.Database.CanConnect())
                     {
@@ -90,7 +96,7 @@ namespace Webshop
                     }
                     else
                     {
-                        // Falls Verbindung fehlschlägt, DB erstellen
+                        // Falls Verbindung fehlschlï¿½gt, DB erstellen
                         context.Database.EnsureCreated();
                     }
                 }
@@ -98,7 +104,7 @@ namespace Webshop
                 {
                     var logger = services.GetRequiredService<ILogger<Program>>();
                     logger.LogError(ex, "Ein Fehler ist beim Migrieren der Datenbank aufgetreten.");
-                    throw; // Exception propagieren damit Container crasht wenn DB-Init fehlschlägt
+                    throw; // Exception propagieren damit Container crasht wenn DB-Init fehlschlï¿½gt
                 }
             }
 
